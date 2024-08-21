@@ -6,6 +6,10 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
+    
+    "scheme": "Employee Management Services",
+    
+    
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -20,8 +24,14 @@
         "backgroundColor": "#ffffff"
       }
     },
+    
+    
     "web": {
-      "favicon": "./assets/favicon.png"
-    }
+      "favicon": "./assets/favicon.png",
+       "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router"
+    ]
   }
 }
