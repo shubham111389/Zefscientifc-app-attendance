@@ -6,8 +6,9 @@ export default function Page() {
       <View style={styles.main}>
         <Text style={styles.title}> Hello Engineer !</Text>
       </View>
-    </View>
+    </View>//mongodb+srv://shubhamannpurne:ZRexTVVnI1otpqLn@cluster2.g1unc.mongodb.net/
   );
+  /*mongodb+srv://shubhamannpurne:ZRexTVVnI1otpqLn@cluster2.g1unc.mongodb.net/ */
 }
 
 const styles = StyleSheet.create({
