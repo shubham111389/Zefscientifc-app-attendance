@@ -1,4 +1,23 @@
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from 'react-native'
+import React from 'react'
+import { Redirect } from 'expo-router'
+
+const index = () => {
+  return (
+   <Redirect href="/home"/>
+  )
+}
+
+export default index
+
+const styles = StyleSheet.create({})
+
+// "/"
+
+
+
+
+/*import { StyleSheet, Text, View } from "react-native";
 
 export default function Page() {
   return (
@@ -8,7 +27,7 @@ export default function Page() {
       </View>
     </View>//mongodb+srv://shubhamannpurne:ZRexTVVnI1otpqLn@cluster2.g1unc.mongodb.net/
   );
-  /*mongodb+srv://shubhamannpurne:ZRexTVVnI1otpqLn@cluster2.g1unc.mongodb.net/ */
+  /*mongodb+srv://shubhamannpurne:ZRexTVVnI1otpqLn@cluster2.g1unc.mongodb.net/ 
 }
 
 const styles = StyleSheet.create({
@@ -32,3 +51,4 @@ const styles = StyleSheet.create({
     color: "#38434D",
   },
 });
+*/
