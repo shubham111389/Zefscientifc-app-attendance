@@ -6,6 +6,7 @@ import { useRouter } from "expo-router";
 
 const index = () => {
     const router = useRouter();
+    
   return (
     <ScrollView>
       <LinearGradient colors={["#7F7FD5", "#E9E4F0"]} style={{ flex: 1 }}>
@@ -17,7 +18,7 @@ const index = () => {
               justifyContent: "space-between",
             }}
           >
-            <Image style={{ width: 45, height: 26 }} source={require('../../assets/logo.png')} />
+            <Image style={{ width: 45, height: 26 }} source={require('../../../assets/logo.png')} />
             <Text style={{ fontSize: 18, fontWeight: "600" }}>
               ZEF SCIENTIFIC IND PVT LTD
             </Text>
@@ -27,7 +28,7 @@ const index = () => {
           <View style={{ flexDirection: "column", marginTop: 20 }}>
             <View style={{ flexDirection: "row", gap: 20 }}>
               <Pressable
-                onPress={() => router.push("/home/Mark_job_register")}
+                onPress={() => router.push("/home/Profile/Mark_job_register")}
                 style={{
                   backgroundColor: "#D3CCE3",
                   padding: 12,
@@ -55,7 +56,7 @@ const index = () => {
               </Pressable>
 
               <Pressable
-                onPress={() => router.push("/home/Mark_Expense_Report")}
+                onPress={() => router.push("/home/Profile/Mark_Expense_Report")}
                 style={{
                   backgroundColor: "#D3CCE3",
                   padding: 12,
@@ -122,6 +123,7 @@ const index = () => {
             }}
           >
             <Pressable
+            onPress={() => router.push("/home/Profile/Job_Register_report")}
               style={{
                 backgroundColor: "#BE93C5",
                 borderRadius: 6,

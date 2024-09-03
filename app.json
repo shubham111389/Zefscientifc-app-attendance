@@ -6,10 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    
     "scheme": "Employee Management Services",
-    
-    
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -18,20 +15,34 @@
     "ios": {
       "supportsTablet": true
     },
+    "expo": {
+      "extra": {
+        "apiUrl": "https://script.google.com/macros/s/AKfycbzKIy0nRZkL1VfgbFxkTWKI8HK5dt6fEpzpJHukROFznkekUI3kozho3icOqkSiLO_G/exec"
+
+      }
+    },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.shubham1201.zefsci"
     },
-    
-    
     "web": {
       "favicon": "./assets/favicon.png",
-       "bundler": "metro"
+      "bundler": "metro"
     },
     "plugins": [
-      "expo-router"
-    ]
+      "expo-router",
+      "expo-font"
+    ],
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "36f0ed7f-966b-4819-85f3-25febe4ac3dd"
+      }
+    }
   }
 }
