@@ -3,6 +3,7 @@
     "name": "zefsci",
     "slug": "zefsci",
     "version": "1.0.0",
+    "entryPoint": "./index.js",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -15,12 +16,7 @@
     "ios": {
       "supportsTablet": true
     },
-    "expo": {
-      "extra": {
-        "apiUrl": "https://script.google.com/macros/s/AKfycbzKIy0nRZkL1VfgbFxkTWKI8HK5dt6fEpzpJHukROFznkekUI3kozho3icOqkSiLO_G/exec"
-
-      }
-    },
+    
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",

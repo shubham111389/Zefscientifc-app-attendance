@@ -1,9 +1,14 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, ActivityIndicator, Alert } from 'react-native';
 import { auth, db } from "../../firebase";
 import { setDoc, doc } from "firebase/firestore";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { useRouter } from 'expo-router';
+import { useSelector } from 'react-redux';
+import useOnline from '../../Hooks/useOnline'; // Import the useOnline hook
+import OfflineComponent from './Profile/OfflineComponent';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 const Login_form = () => {
   const [isSignInForm, setIsSignInForm] = useState(true);
@@ -17,62 +22,86 @@ const Login_form = () => {
   const [loading, setLoading] = useState(false); // Loading state
   const router = useRouter();
 
+  const isOnline = useOnline(); // Call useOnline to check the network status
+  
+  const storeUserData = async (userDetails) => {
+    try {
+      await AsyncStorage.setItem('@user_data', JSON.stringify(userDetails));
+    } catch (e) {
+      console.error("Failed to store user data in AsyncStorage", e);
+    }
+  };
   const handleSubmit = async () => {
-    // Check for email and password errors
     if (emailError || email === '') {
-      alert('Please use a @zefsci.com email address');
+      alert('Please use a "@zefsci.com" email address');
       return;
     } else if (passwordError) {
-      alert(JSON.stringify(passwordError));
+      alert('Password Error', JSON.stringify(passwordError));
       return;
     }
-    
-    // Start loading
+
     setLoading(true);
     try {
       if (isSignInForm) {
         // Sign In logic
-        await signInWithEmailAndPassword(auth, email, password);
-        alert("Welcome in ZEF SCIENTIFIC IND PVT LTD");
-        console.log("User signed in successfully");
-        router.push("/home/Profile");
+        try {
+          await signInWithEmailAndPassword(auth, email, password);
+          const user = auth.currentUser;
+          const userDetails = {
+            uid: user.uid,
+            email: user.email,
+            displayName: user.displayName,
+            // Add more fields as needed
+          };
+      
+          // Store the user details in AsyncStorage
+          storeUserData(userDetails);
+          console.log( user);
+          alert("Welcome in ZEF SCIENTIFIC IND PVT LTD");
+          router.push("/home/Profile/Home");
+        } catch (error) {
+          console.log(error.message);
+          alert('Sorry! Password does not match your Email ID');
+        }
       } else {
         // Sign Up logic
-       
         try {
           await createUserWithEmailAndPassword(auth, email, password);
           const user = auth.currentUser;
-          console.log(user);
           if (user) {
             await setDoc(doc(db, "Users", user.uid), {
               email: user.email,
               firstName: FirstName,
-              lastname: LastName,
-              Employee_Code : EmployeeCode,
-              photo:""
+              lastName: LastName,
+              Employee_Code: EmployeeCode,
+              photo: ""
             });
-
           }
-          console.log("User Registered Successfully!!");
-          alert("Welcome in ZEF SCIENTIFIC PVT LTD ")
-          router.push("/home/Profile")
-          
+          const userDetails = {
+            uid: user.uid,
+            email: user.email,
+            displayName: user.FirstName,
+            // Add more fields as needed
+          };
+      
+          // Store the user details in AsyncStorage
+          storeUserData(userDetails);
+          alert("Welcome to ZEF SCIENTIFIC PVT LTD");
+          router.push("/home/Profile/Home");
         } catch (error) {
           console.log(error.message);
-          
+          alert(error.message);
         }
-
       }
       setLoading(false);
     } catch (error) {
       console.log(error.message);
       alert(JSON.stringify(error.message));
-    } 
+    }
   };
 
   const validatePassword = (inputPassword) => {
     setPassword(inputPassword);
-
     const minLength = 8;
     const hasUpperCase = /[A-Z]/.test(inputPassword);
     const hasLowerCase = /[a-z]/.test(inputPassword);
@@ -92,16 +121,14 @@ const Login_form = () => {
     } else {
       setPasswordError(''); // Clear the error if the password is valid
     }
-    console.log(passwordError);
   };
 
   const toggleSignInForm = () => {
     setIsSignInForm(!isSignInForm);
-  }; 
+  };
+
   const handleEmailChange = (inputEmail) => {
     setEmail(inputEmail);
-
-    // Check if the email ends with '@zefsci.com'
     if (!inputEmail.endsWith('@zefsci.com')) {
       setEmailError('Please use a @zefsci.com email address.');
     } else {
@@ -109,6 +136,9 @@ const Login_form = () => {
     }
   };
 
+  if (!isOnline) {
+    return <OfflineComponent/>;
+  }
   return (
     <View style={styles.container}>
       <Image source={{ uri: 'https://as1.ftcdn.net/v2/jpg/04/79/83/18/1000_F_479831845_S6LGeWAaIs6LzUSIsqwYYhB0OSbGqBZZ.jpg' }} style={styles.backgroundImage} />
@@ -128,7 +158,7 @@ const Login_form = () => {
               placeholder="Last Name"
               style={styles.input}
               placeholderTextColor="#ccc"
-              onChangeText={(text) => setLastName(text)} 
+              onChangeText={(text) => setLastName(text)}
             />
             <TextInput
               placeholder="Employee Code"
@@ -196,7 +226,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#FFD700', // Gold color for title
+    color: '#FFD700',
     marginBottom: 20,
     textAlign: 'center',
   },
@@ -223,6 +253,17 @@ const styles = StyleSheet.create({
     color: '#1e90ff',
     textAlign: 'center',
     textDecorationLine: 'underline',
+  },
+  offlineContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#000',
+  },
+  offlineText: {
+    fontSize: 20,
+    color: '#fff',
+    textAlign: 'center',
   },
 });
 

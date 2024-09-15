@@ -1,11 +1,22 @@
-import React from "react";
-import { UserProvider } from "./UserContext";
-import YourAppComponents from "./YourAppComponents";
+import { Redirect } from 'expo-router'
+import React, { createContext, useContext, useState } from 'react';
+import Home from './app/home/Profile/Home';
 
-export default function App() {
+export const UserContext1 = createContext();
+
+ function App() {
+
   return (
-    <UserProvider>
-      <YourAppComponents />
-    </UserProvider>
+    
+    <div>
+      <h1>
+        ZEF SCIENTIFIC IND PVT LTD 
+       
+      </h1>
+    </div>
+   
+
   );
 }
+
+export default App;

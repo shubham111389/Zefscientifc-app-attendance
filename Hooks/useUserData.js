@@ -14,8 +14,12 @@ const useUserData = () => {
           if (user) {
             const docRef = doc(db, "Users", user.uid);
             const docSnap = await getDoc(docRef);
+            
             if (docSnap.exists()) {
-              setUserDetails(docSnap.data());
+              setUserDetails({
+                ...docSnap.data(),
+                uid: user.uid, // Add uid to the user details object
+              });
             } else {
               setError("No such document!");
             }
@@ -30,8 +34,8 @@ const useUserData = () => {
       }
     };
 
-    fetchUserData();
-  }, []);
+    fetchUserData(); // Call the fetch function inside useEffect
+  }, []); // Empty dependency array ensures it runs once
 
   return { userDetails, loading, error };
 };

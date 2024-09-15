@@ -1,12 +1,51 @@
-import { StyleSheet, Text, View, ScrollView, Pressable ,Image} from "react-native";
-import React from "react";
+import { StyleSheet, Text, View, ScrollView, Pressable, Image } from "react-native";
+import { useContext, useState, useEffect } from "react";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from "expo-linear-gradient";
-import { Feather, Entypo, Ionicons, Octicons,MaterialIcons , FontAwesome6,FontAwesome,FontAwesome5, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { Feather, Entypo, Ionicons, Octicons, MaterialIcons, FontAwesome6, FontAwesome, FontAwesome5, MaterialCommunityIcons } from "@expo/vector-icons";
 
-const index = () => {
-    const router = useRouter();
-    
+import useUserData from "../../../Hooks/useUserData";
+import OfflineComponent from './OfflineComponent';
+import useOnline from '../../../Hooks/useOnline'; 
+import LoadingScreen from "./LoadingScreen";
+
+const Home = () => {
+  const isOnline = useOnline(); 
+  const router = useRouter();
+  const { userDetails } = useUserData();
+  const [isLoading, setIsLoading] = useState(true);
+
+  const checkUserSession = async () => {
+    try {
+      const userData = await AsyncStorage.getItem('@user_data');
+      if (userData !== null) {
+        const userDetails = JSON.parse(userData);
+        console.log(userDetails); // Log the parsed user data only once
+        // Remove the navigation to Home since you're already here
+      } else {
+        // If no user session exists, you can navigate to the login screen instead
+        router.push('../Login_form');  // Redirect to login if not logged in
+      }
+    } catch (error) {
+      console.error('Failed to load user data', error);
+    } finally {
+      setIsLoading(false);  // Stop loading after the check
+    }
+  };
+
+  useEffect(() => {
+    checkUserSession();
+  }, []); // Only run once when the component mounts
+
+  if (isLoading) {
+    return <LoadingScreen />;  // Properly return the loading screen
+  }
+
+  if (!isOnline) {
+    return <OfflineComponent />;
+  }
+
   return (
     <ScrollView>
       <LinearGradient colors={["#7F7FD5", "#E9E4F0"]} style={{ flex: 1 }}>
@@ -18,17 +57,19 @@ const index = () => {
               justifyContent: "space-between",
             }}
           >
-            <Image style={{ width: 45, height: 26 }} source={require('../../../assets/logo.png')} />
+            <Image style={{ width: 60, height: 26 }} source={require('../../../assets/icon.png')} />
             <Text style={{ fontSize: 18, fontWeight: "600" }}>
               ZEF SCIENTIFIC IND PVT LTD
             </Text>
-            <FontAwesome name="user-circle" size={26} color="black" />
+            <Pressable onPress={() => router.push('./User_Profile')}>
+              <FontAwesome name="user-circle" size={26} color="black" />
+            </Pressable>
           </View>
 
           <View style={{ flexDirection: "column", marginTop: 20 }}>
             <View style={{ flexDirection: "row", gap: 20 }}>
               <Pressable
-                onPress={() => router.push("/home/Profile/Mark_job_register")}
+              onPress={()=>(router.push('./Mark_job_register'))}
                 style={{
                   backgroundColor: "#D3CCE3",
                   padding: 12,
@@ -424,6 +465,6 @@ const index = () => {
   );
 };
 
-export default index;
+export default Home;
 
 const styles = StyleSheet.create({});

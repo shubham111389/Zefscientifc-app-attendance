@@ -1,10 +1,15 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { useRouter } from "expo-router";
+import { useSelector } from 'react-redux';
 
 
-const ZefScientificLogin = () => {
+
+
+const Login_page = () => {
   const router = useRouter();
+  
+
   return (
     <View style={styles.container}>
       <Image 
@@ -88,4 +93,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ZefScientificLogin;
+export default Login_page;
