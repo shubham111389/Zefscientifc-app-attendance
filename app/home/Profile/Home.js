@@ -20,8 +20,8 @@ const Home = () => {
     try {
       const userData = await AsyncStorage.getItem('@user_data');
       if (userData !== null) {
-        const userDetails = JSON.parse(userData);
-        console.log(userDetails); // Log the parsed user data only once
+        const user1 = JSON.parse(userData);
+        console.log(user1); // Log the parsed user data only once
         // Remove the navigation to Home since you're already here
       } else {
         // If no user session exists, you can navigate to the login screen instead
@@ -33,6 +33,8 @@ const Home = () => {
       setIsLoading(false);  // Stop loading after the check
     }
   };
+
+  console.log(userDetails);
 
   useEffect(() => {
     checkUserSession();
