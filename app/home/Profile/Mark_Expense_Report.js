@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { StyleSheet, View, ScrollView, TouchableOpacity, Text } from 'react-native';
 import { TextInput, Button, Title, HelperText } from 'react-native-paper';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
-import { AntDesign } from "@expo/vector-icons";
+import { Feather, Entypo, AntDesign, Ionicons, Octicons, MaterialIcons, FontAwesome6, FontAwesome, FontAwesome5, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useForm, Controller } from 'react-hook-form';
 import { Dropdown } from 'react-native-element-dropdown';
 
@@ -162,7 +162,8 @@ const ExpenseForm = () => {
           )}
         />
 
-        <Controller
+     {/* Amount Field */}
+     <Controller
           control={control}
           name="Amount"
           rules={{ required: 'Amount is required' }}
@@ -183,6 +184,7 @@ const ExpenseForm = () => {
           )}
         />
 
+        {/* Description Field */}
         <Controller
           control={control}
           name="Description"
@@ -203,14 +205,132 @@ const ExpenseForm = () => {
           )}
         />
 
-        <Button
-          mode="contained"
-          onPress={handleSubmit(onSubmit)}
-          style={styles.submitButton}
-        >
+        {/* Bill Submitted Field */}
+        <Controller
+          control={control}
+          name="BillSubmitted"
+          rules={{ required: 'Bill Submitted is required' }}
+          render={({ field: { onChange, onBlur, value } }) => (
+            <>
+              <TextInput
+                label="Bill Submitted"
+                mode="outlined"
+                onBlur={onBlur}
+                onChangeText={onChange}
+                value={value}
+                style={styles.input}
+                theme={{ colors: { primary: '#6200ee' } }}
+              />
+              {errors.BillSubmitted && <HelperText type="error" style={styles.errorText}>{errors.BillSubmitted.message}</HelperText>}
+            </>
+          )}
+        />
+
+        {/* KM For Petrol Expenses Field */}
+        <Controller
+          control={control}
+          name="KMForPetrolExpenses"
+          render={({ field: { onChange, onBlur, value } }) => (
+            <>
+              <TextInput
+                label="KM For Petrol Expenses"
+                mode="outlined"
+                keyboardType="numeric"
+                onBlur={onBlur}
+                onChangeText={onChange}
+                value={value}
+                style={styles.input}
+                theme={{ colors: { primary: '#6200ee' } }}
+              />
+            </>
+          )}
+        />
+
+        {/* Reference For KM Calculation Field */}
+        <Controller
+          control={control}
+          name="ReferenceForKMCalculation"
+          render={({ field: { onChange, onBlur, value } }) => (
+            <>
+              <TextInput
+                label="Reference for KM Calculation"
+                mode="outlined"
+                onBlur={onBlur}
+                onChangeText={onChange}
+                value={value}
+                style={styles.input}
+                theme={{ colors: { primary: '#6200ee' } }}
+              />
+            </>
+          )}
+        />
+
+        {/* Details or Remarks Field */}
+        <Controller
+          control={control}
+          name="DetailsOrRemarks"
+          render={({ field: { onChange, onBlur, value } }) => (
+            <>
+              <TextInput
+                label="Details / Remarks"
+                mode="outlined"
+                multiline
+                numberOfLines={4}
+                onBlur={onBlur}
+                onChangeText={onChange}
+                value={value}
+                style={styles.input}
+                theme={{ colors: { primary: '#6200ee' } }}
+              />
+            </>
+          )}
+        />
+
+        {/* Submit Button */}
+        <Button mode="contained" onPress={handleSubmit(onSubmit)} style={styles.button}>
           Submit
         </Button>
+
+        {/* Contact Button */}
+        <Button mode="outlined" onPress={() => console.log('Add another expense')} style={styles.addButton}>
+          Add Another Expense
+        </Button>
+        
       </View>
+      <View style={styles.contactContainer}>
+  <Text style={styles.contactText}>
+    If you have any issues or need further assistance, please contact us at 
+    <Text style={styles.contactEmail}> a.shubham@zefsci.com</Text>
+  </Text>
+</View>
+<View style={styles.socialIconsContainer}>
+  <FontAwesome
+    name="facebook"
+    size={24}
+    color="Gray"
+    style={styles.icon}
+  />
+  <FontAwesome
+    name="twitter"
+    size={24}
+    color="Gray"
+    style={styles.icon}
+  />
+  <FontAwesome
+    name="linkedin"
+    size={24}
+    color="Black"
+    style={styles.icon}
+  />
+  <FontAwesome
+    name="instagram"
+    size={24}
+    color="Black"
+    style={styles.icon}
+  />
+</View>
+
+
     </ScrollView>
   );
 };
@@ -233,7 +353,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginVertical: 10,
+    marginTop: 10,
+    marginBottom:-2,
   },
   dateText: {
     marginHorizontal: 10,
@@ -288,6 +409,36 @@ const styles = StyleSheet.create({
   },
   focused: {
     borderColor: '#6200ee', // Outline color when focused
+  },
+  contactContainer: {
+    marginTop:3,
+    
+    paddingHorizontal: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  contactText: {
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  contactEmail: {
+    color: '#6200ee',
+    fontWeight: 'bold',
+    fontSize: 15,
+  },
+  socialIconsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center', 
+    alignItems: 'center',
+    marginTop:6,
+    marginBottom: 20,
+  },
+  icon: {
+    marginHorizontal: 10, // Space between icons
+  },
+  button: {
+    marginVertical: 14,
+    
   },
 });
 
