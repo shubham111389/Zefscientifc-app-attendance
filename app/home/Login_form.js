@@ -36,7 +36,7 @@ const Login_form = () => {
       alert('Please use a "@zefsci.com" email address');
       return;
     } else if (passwordError) {
-      alert('Password Error', JSON.stringify(passwordError));
+      alert(JSON.stringify(passwordError));
       return;
     }
 
