@@ -2,18 +2,28 @@ import React, { useState } from 'react';
 import { StyleSheet, View, ScrollView, TouchableOpacity, Text } from 'react-native';
 import { TextInput, Button, Title, HelperText } from 'react-native-paper';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
-import { Feather, Entypo, AntDesign, Ionicons, Octicons, MaterialIcons, FontAwesome6, FontAwesome, FontAwesome5, MaterialCommunityIcons } from "@expo/vector-icons";
+import { AntDesign } from "@expo/vector-icons";
 import { useForm, Controller } from 'react-hook-form';
+import { Dropdown } from 'react-native-element-dropdown';
 
 const ExpenseForm = () => {
   const { control, handleSubmit, formState: { errors } } = useForm();
   const [date, setDate] = useState(new Date());
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+  const data = [
+    { label: 'Item 1', value: '1' },
+    { label: 'Item 2', value: '2' },
+    { label: 'Item 3', value: '3' },
+    { label: 'Item 4', value: '4' },
+    { label: 'Item 5', value: '5' },
+    { label: 'Item 6', value: '6' },
+    { label: 'Item 7', value: '7' },
+    { label: 'Item 8', value: '8' },
+  ];
 
   const onSubmit = (data) => {
-    data.DateAndDay = date.toDateString(); // Add selected date to form data
+    data.DateAndDay = date.toDateString(); 
     console.log(data);
-    // Handle form submission
   };
 
   const showDatePicker = () => {
@@ -50,7 +60,6 @@ const ExpenseForm = () => {
       <View style={styles.header}>
         <Title style={styles.title}>Expense Report Submission</Title>
 
-        {/* Date Navigation with Icons and Date Text */}
         <View style={styles.dateContainer}>
           <AntDesign onPress={goToPrevDay} name="left" size={24} color="#6200ee" />
           <TouchableOpacity onPress={showDatePicker}>
@@ -60,7 +69,6 @@ const ExpenseForm = () => {
         </View>
       </View>
 
-      {/* Date Picker Modal */}
       <DateTimePickerModal
         isVisible={isDatePickerVisible}
         mode="date"
@@ -69,7 +77,6 @@ const ExpenseForm = () => {
       />
 
       <View style={styles.form}>
-        {/* Category Field */}
         <Controller
           control={control}
           name="Category"
@@ -90,7 +97,6 @@ const ExpenseForm = () => {
           )}
         />
 
-        {/* City Field */}
         <Controller
           control={control}
           name="City"
@@ -114,25 +120,48 @@ const ExpenseForm = () => {
         {/* Expense Type Field */}
         <Controller
           control={control}
-          name="ExpenseType"
+          name="Expense Type"
           rules={{ required: 'Expense Type is required' }}
-          render={({ field: { onChange, onBlur, value } }) => (
+          render={({ field: { onChange, value, onBlur }, fieldState: { error } }) => (
             <>
-              <TextInput
-                label="Expense Type"
-                mode="outlined"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-                style={styles.input}
-                theme={{ colors: { primary: '#6200ee' } }}
-              />
-              {errors.ExpenseType && <HelperText type="error" style={styles.errorText}>{errors.ExpenseType.message}</HelperText>}
+             <Controller
+  control={control}
+  name="Expense Type"
+  rules={{ required: 'Expense Type is required' }}
+  render={({ field: { onChange, value, onBlur }, fieldState: { error } }) => (
+    <>
+      <View style={[styles.input, styles.dropdownContainer, value ? styles.focused : {}]}>
+        <Dropdown
+          style={styles.dropdown} // Apply consistent styling
+          selectedTextStyle={styles.selectedTextStyle}
+          inputSearchStyle={styles.inputSearchStyle}
+          iconStyle={styles.iconStyle}
+          data={data}
+          search
+          maxHeight={200}
+          labelField="label"
+          valueField="value"
+          placeholder={value ? '' : 'Expense Type'} // Float placeholder when value exists
+          searchPlaceholder="Search..."
+          value={value}
+          onBlur={onBlur}
+          onChange={(item) => {
+            onChange(item.value);
+            console.log(`Selected Item: ${item.label}`);
+          }}
+        />
+        {/* Floating label effect */}
+        {value && <Text style={styles.floatingLabel}>Expense Type</Text>}
+      </View>
+      {error && <HelperText type="error" style={styles.errorText}>{error.message}</HelperText>}
+    </>
+  )}
+/>
+              {error && <HelperText type="error" style={styles.errorText}>{error.message}</HelperText>}
             </>
           )}
         />
 
-        {/* Amount Field */}
         <Controller
           control={control}
           name="Amount"
@@ -154,7 +183,6 @@ const ExpenseForm = () => {
           )}
         />
 
-        {/* Description Field */}
         <Controller
           control={control}
           name="Description"
@@ -175,132 +203,14 @@ const ExpenseForm = () => {
           )}
         />
 
-        {/* Bill Submitted Field */}
-        <Controller
-          control={control}
-          name="BillSubmitted"
-          rules={{ required: 'Bill Submitted is required' }}
-          render={({ field: { onChange, onBlur, value } }) => (
-            <>
-              <TextInput
-                label="Bill Submitted"
-                mode="outlined"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-                style={styles.input}
-                theme={{ colors: { primary: '#6200ee' } }}
-              />
-              {errors.BillSubmitted && <HelperText type="error" style={styles.errorText}>{errors.BillSubmitted.message}</HelperText>}
-            </>
-          )}
-        />
-
-        {/* KM For Petrol Expenses Field */}
-        <Controller
-          control={control}
-          name="KMForPetrolExpenses"
-          render={({ field: { onChange, onBlur, value } }) => (
-            <>
-              <TextInput
-                label="KM For Petrol Expenses"
-                mode="outlined"
-                keyboardType="numeric"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-                style={styles.input}
-                theme={{ colors: { primary: '#6200ee' } }}
-              />
-            </>
-          )}
-        />
-
-        {/* Reference For KM Calculation Field */}
-        <Controller
-          control={control}
-          name="ReferenceForKMCalculation"
-          render={({ field: { onChange, onBlur, value } }) => (
-            <>
-              <TextInput
-                label="Reference for KM Calculation"
-                mode="outlined"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-                style={styles.input}
-                theme={{ colors: { primary: '#6200ee' } }}
-              />
-            </>
-          )}
-        />
-
-        {/* Details or Remarks Field */}
-        <Controller
-          control={control}
-          name="DetailsOrRemarks"
-          render={({ field: { onChange, onBlur, value } }) => (
-            <>
-              <TextInput
-                label="Details / Remarks"
-                mode="outlined"
-                multiline
-                numberOfLines={4}
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-                style={styles.input}
-                theme={{ colors: { primary: '#6200ee' } }}
-              />
-            </>
-          )}
-        />
-
-        {/* Submit Button */}
-        <Button mode="contained" onPress={handleSubmit(onSubmit)} style={styles.button}>
+        <Button
+          mode="contained"
+          onPress={handleSubmit(onSubmit)}
+          style={styles.submitButton}
+        >
           Submit
         </Button>
-
-        {/* Contact Button */}
-        <Button mode="outlined" onPress={() => console.log('Add another expense')} style={styles.addButton}>
-          Add Another Expense
-        </Button>
-        
       </View>
-      <View style={styles.contactContainer}>
-  <Text style={styles.contactText}>
-    If you have any issues or need further assistance, please contact us at 
-    <Text style={styles.contactEmail}> a.shubham@zefsci.com</Text>
-  </Text>
-</View>
-<View style={styles.socialIconsContainer}>
-  <FontAwesome
-    name="facebook"
-    size={24}
-    color="Gray"
-    style={styles.icon}
-  />
-  <FontAwesome
-    name="twitter"
-    size={24}
-    color="Gray"
-    style={styles.icon}
-  />
-  <FontAwesome
-    name="linkedin"
-    size={24}
-    color="Black"
-    style={styles.icon}
-  />
-  <FontAwesome
-    name="instagram"
-    size={24}
-    color="Black"
-    style={styles.icon}
-  />
-</View>
-
-
     </ScrollView>
   );
 };
@@ -309,116 +219,75 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#ffffff',
   },
   header: {
-    marginBottom: 16,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    color: '#333',
-    marginBottom: 8,
-  },
-  dateContainer: {
-    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    marginVertical: 8,
-  },
-  dateText: {
-    fontSize: 18,
-    fontWeight: '500',
-    marginHorizontal: 12,
-    color: '#6200ee',
-  },
-  form: {
-    marginBottom: 16,
-  },
-  input: {
-    marginBottom: 8,
-  },
-  errorText: {
-    marginTop: 4,
-  },
-  button: {
-    marginVertical: 16,
-  },
-  addExpenseText: {
-    color: '#6200ee',
-    textAlign: 'center',
-    fontWeight: 'bold',
-  },
-  container: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: '#f5f5f5',
-  },
-  header: {
-    marginBottom: 16,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    color: '#333',
-    marginBottom: 8,
-  },
-  dateContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginVertical: 8,
-  },
-  dateText: {
-    fontSize: 18,
-    fontWeight: '500',
-    marginHorizontal: 12,
-    color: '#6200ee',
-  },
-  form: {
-    marginBottom: 16,
-  },
-  input: {
-    marginBottom: 8,
-  },
-  errorText: {
-    marginTop: 4,
-  },
-  button: {
-    marginVertical: 14,
-  },
-  addExpenseText: {
-    color: '#6200ee',
-    textAlign: 'center',
-    fontWeight: 'bold',
-  },
-  contactContainer: {
-    marginTop:6
-    ,
-    paddingHorizontal: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  contactText: {
-    fontSize: 14,
-    textAlign: 'center',
-  },
-  contactEmail: {
-    color: '#6200ee',
-    fontWeight: 'bold',
-    fontSize: 15,
-  },
-  socialIconsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center', 
-    alignItems: 'center',
-    marginTop: 4,
     marginBottom: 20,
   },
-  icon: {
-    marginHorizontal: 10, // Space between icons
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  dateContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 10,
+  },
+  dateText: {
+    marginHorizontal: 10,
+    fontSize: 18,
+  },
+  form: {
+    marginBottom: 20,
+  },
+  input: {
+    marginBottom: 12,
+  },
+  dropdownContainer: {
+    position: 'relative', // To handle the floating label positioning
+    borderColor: '#6200ee',
+    borderWidth: 1,
+    borderRadius: 4,
+    padding: 8,
+  },
+  dropdown: {
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+  },
+  floatingLabel: {
+    position: 'absolute',
+    left: 8,
+    top: -10,
+    backgroundColor: '#ffffff',
+    paddingHorizontal: 4,
+    fontSize: 14,
+    fontWeight:'400',
+    color: '#6200ee',
+  },
+  selectedTextStyle: {
+    fontSize: 16,
+    color: '#000',
+  },
+  inputSearchStyle: {
+    height: 40,
+    fontSize: 16,
+  },
+  iconStyle: {
+    width: 20,
+    height: 20,
+  },
+  errorText: {
+    fontSize: 12,
+    color: 'red',
+  },
+  submitButton: {
+    marginTop: 16,
+    padding: 10,
+  },
+  focused: {
+    borderColor: '#6200ee', // Outline color when focused
   },
 });
 

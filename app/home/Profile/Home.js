@@ -99,7 +99,7 @@ const Home = () => {
               </Pressable>
 
               <Pressable
-                onPress={() => router.push("./Mark_Expense_Report1")}
+                onPress={() => router.push("./Mark_Expense_Report")}
                 style={{
                   backgroundColor: "#D3CCE3",
                   padding: 12,
