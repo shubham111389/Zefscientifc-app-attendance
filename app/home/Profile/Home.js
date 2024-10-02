@@ -71,7 +71,7 @@ const Home = () => {
           <View style={{ flexDirection: "column", marginTop: 20 }}>
             <View style={{ flexDirection: "row", gap: 20 }}>
               <Pressable
-              onPress={()=>(router.push('./Dropdown'))}
+              onPress={()=>(router.push('./Mark_job_register'))}
                 style={{
                   backgroundColor: "#D3CCE3",
                   padding: 12,

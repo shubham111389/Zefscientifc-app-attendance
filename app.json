@@ -6,13 +6,29 @@
     "entryPoint": "./index.js",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    
+    
+    "userInterfaceStyle": "light", 
+    
+    "plugins": [
+      [
+        "expo-system-ui",
+        {
+          "backgroundColor": "#ffffff" 
+        }
+      ],
+      "expo-router",
+      "expo-font"
+    ],
+    
     "scheme": "Employee Management Services",
+    
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    
     "ios": {
       "supportsTablet": true
     },
@@ -24,15 +40,12 @@
       },
       "package": "com.shubham1201.zefsci"
     },
+    
     "web": {
       "favicon": "./assets/favicon.png",
       "bundler": "metro"
     },
-    "plugins": [
-      "expo-router",
-      "expo-font"
-      
-    ],
+    
     "extra": {
       "router": {
         "origin": false

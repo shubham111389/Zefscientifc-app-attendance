@@ -1,30 +1,131 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, ScrollView, TouchableOpacity, Text } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, View, ScrollView, TouchableOpacity, Text,Alert } from 'react-native';
 import { TextInput, Button, Title, HelperText } from 'react-native-paper';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
-import { Feather, Entypo, AntDesign, Ionicons, Octicons, MaterialIcons, FontAwesome6, FontAwesome, FontAwesome5, MaterialCommunityIcons } from "@expo/vector-icons";
+import {  AntDesign,  FontAwesome,  } from "@expo/vector-icons";
 import { useForm, Controller } from 'react-hook-form';
+import {API_URL_FOR_EXPENSE_POST} from "@env"
 import { Dropdown } from 'react-native-element-dropdown';
+import useDropdownData from '../../../Hooks/useDropdownData';
+import LoadingScreen from './LoadingScreen';
+import useOnline from '../../../Hooks/useOnline';
+import { useRouter } from 'expo-router';
 
 const ExpenseForm = () => {
+  const isOnline = useOnline(); 
+  const router = useRouter();
+
   const { control, handleSubmit, formState: { errors } } = useForm();
   const [date, setDate] = useState(new Date());
+  const { dropdownOptions, loading, error } = useDropdownData();
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
-  const data = [
-    { label: 'Item 1', value: '1' },
-    { label: 'Item 2', value: '2' },
-    { label: 'Item 3', value: '3' },
-    { label: 'Item 4', value: '4' },
-    { label: 'Item 5', value: '5' },
-    { label: 'Item 6', value: '6' },
-    { label: 'Item 7', value: '7' },
-    { label: 'Item 8', value: '8' },
-  ];
 
-  const onSubmit = (data) => {
-    data.DateAndDay = date.toDateString(); 
-    console.log(data);
+  const [isLoading, setIsLoading] = useState(true);  
+  const [isDropdown, setIsDropdown] = useState();  
+
+  const onSubmit = async (data) => {
+    const formDatab = new FormData();
+    formDatab.append('DateAndDay', data.DateDateAndDay || date.toDateString());
+    formDatab.append('Category', data.Category);
+    formDatab.append('City', data.City);
+    formDatab.append('ExpenseType', data.ExpenseType);
+    formDatab.append('Amount', data.Amount);
+    formDatab.append('Description', data.Description);
+    formDatab.append('BillSubmitted', data.BillSubmitted);
+    formDatab.append('KMForPetrolExpenses', data.KMForPetrolExpenses);
+    formDatab.append('ReferenceForKMCalculation', data.ReferenceForKMCalculation);
+    formDatab.append('DetailsOrRemarks', data.DetailsOrRemarks);
+
+    console.log("Submitted Form Data: ", formDatab);
+    
+    try {
+      const response = await fetch(API_URL_FOR_EXPENSE_POST, {
+        method: 'POST',
+        body: formDatab,
+      });
+    
+      const contentType = response.headers.get('content-type');
+      
+      if (contentType && contentType.includes('application/json')) {
+        const result = await response.json();
+        console.log(result);
+        Alert.alert('Success', 'Form submitted successfully!');
+      } else {
+        const result = await response.text();
+        console.log('Response is not JSON:', result);
+        Alert.alert('Success', result);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      Alert.alert('Error', 'Failed to submit the form.');
+    }
   };
+
+  const handleAddAnotherExpense = async (data) => {
+    setIsLoading(true);
+    await onSubmit(data); 
+    setIsLoading(false);// Wait for form submission to complete
+    router.push('./Mark_Expense_Report'); // Navigate after form submission is done
+  };
+
+ 
+ 
+  
+  useEffect(() => {
+    if (dropdownOptions) {
+     
+      setIsDropdown(dropdownOptions[0])
+       // Stop loading once user data is available
+    }
+  }, [dropdownOptions]);
+
+  useEffect(() => {
+    if (isDropdown) {
+      setIsLoading(false);
+     
+       // Stop loading once user data is available
+    }
+  }, [isDropdown]);
+// Loading state
+
+  
+ if (!isOnline) {
+  return <OfflineComponent />;
+ }
+
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
+
+  console.log(isDropdown);
+ 
+
+   // Transform the data1 to dropdown format
+   const categoryOptions = isDropdown.Category.map((category) => ({
+    label: category,
+    value: category
+  }));
+  
+  const expenseTypeOptions = isDropdown.Expense_Type.map((type) => ({
+    label: type,
+    value: type
+  }));
+  
+  
+  
+const cityOptions = isDropdown.City.map((city) => ({
+    label: city,
+    value: city
+  }));
+   
+const BillSubmittedOptions = isDropdown.Bill_submitted.map((type) => ({
+    label: type,
+    value: type
+  }));
+   
+  
+  
+  
 
   const showDatePicker = () => {
     setDatePickerVisibility(true);
@@ -77,72 +178,25 @@ const ExpenseForm = () => {
       />
 
       <View style={styles.form}>
-        <Controller
-          control={control}
-          name="Category"
-          rules={{ required: 'Category is required' }}
-          render={({ field: { onChange, onBlur, value } }) => (
-            <>
-              <TextInput
-                label="Expense Category"
-                mode="outlined"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-                style={styles.input}
-                theme={{ colors: { primary: '#6200ee' } }}
-              />
-              {errors.Category && <HelperText type="error" style={styles.errorText}>{errors.Category.message}</HelperText>}
-            </>
-          )}
-        />
-
-        <Controller
-          control={control}
-          name="City"
-          rules={{ required: 'City is required' }}
-          render={({ field: { onChange, onBlur, value } }) => (
-            <>
-              <TextInput
-                label="City"
-                mode="outlined"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-                style={styles.input}
-                theme={{ colors: { primary: '#6200ee' } }}
-              />
-              {errors.City && <HelperText type="error" style={styles.errorText}>{errors.City.message}</HelperText>}
-            </>
-          )}
-        />
-
-        {/* Expense Type Field */}
-        <Controller
-          control={control}
-          name="Expense Type"
-          rules={{ required: 'Expense Type is required' }}
-          render={({ field: { onChange, value, onBlur }, fieldState: { error } }) => (
-            <>
-             <Controller
+      <Controller
   control={control}
-  name="Expense Type"
-  rules={{ required: 'Expense Type is required' }}
+  name="Category"
+  rules={{ required: 'Category is required' }}
   render={({ field: { onChange, value, onBlur }, fieldState: { error } }) => (
     <>
-      <View style={[styles.input, styles.dropdownContainer, value ? styles.focused : {}]}>
+      <View style={[styles.input1, styles.dropdownContainer, value ? styles.focused : {}]}>
         <Dropdown
           style={styles.dropdown} // Apply consistent styling
           selectedTextStyle={styles.selectedTextStyle}
           inputSearchStyle={styles.inputSearchStyle}
           iconStyle={styles.iconStyle}
-          data={data}
+          data={categoryOptions}
           search
-          maxHeight={200}
+          maxHeight={300}
           labelField="label"
           valueField="value"
-          placeholder={value ? '' : 'Expense Type'} // Float placeholder when value exists
-          searchPlaceholder="Search..."
+          placeholder={value ? '' : 'Category'} // Float placeholder when value exists
+          searchPlaceholder="Category"
           value={value}
           onBlur={onBlur}
           onChange={(item) => {
@@ -151,16 +205,78 @@ const ExpenseForm = () => {
           }}
         />
         {/* Floating label effect */}
+        {value && <Text style={styles.floatingLabel}>Category</Text>}
+      </View>
+      {error && <HelperText type="error" style={styles.errorText}>{error.message}</HelperText>}
+    </>
+  )}
+/>
+<Controller
+  control={control}
+  name="City" // Corrected field name
+  rules={{ required: 'City is required' }}
+  render={({ field: { onChange, value, onBlur }, fieldState: { error } }) => (
+    <>
+      <View style={[styles.input1, styles.dropdownContainer, value ? styles.focused : {}]}>
+      <Dropdown
+   style={styles.dropdown} // Apply consistent styling
+   selectedTextStyle={styles.selectedTextStyle}
+   inputSearchStyle={styles.inputSearchStyle}
+   iconStyle={styles.iconStyle}
+   data={cityOptions}
+   search
+  labelField="label"
+  valueField="value"
+  placeholder="City"
+  searchPlaceholder="City"
+  value={value}
+  onBlur={onBlur}
+  onChange={(item) => {
+    onChange(item.value); // This should set the value correctly
+    console.log(`Selected City: ${item.label}`); // Log selected city
+  }}
+/>
+
+        {value && <Text style={styles.floatingLabel}>City</Text>}
+      </View>
+      {error && <HelperText type="error" style={styles.errorText}>{error.message}</HelperText>}
+    </>
+  )}
+/>
+
+<Controller
+  control={control}
+  name="ExpenseType" // Corrected field name
+  rules={{ required: 'Expense Type is required' }}
+  render={({ field: { onChange, value, onBlur }, fieldState: { error } }) => (
+    <>
+      <View style={[styles.input1, styles.dropdownContainer, value ? styles.focused : {}]}>
+      <Dropdown
+  style={styles.dropdown} // Apply consistent styling
+  selectedTextStyle={styles.selectedTextStyle}
+  inputSearchStyle={styles.inputSearchStyle}
+  iconStyle={styles.iconStyle}
+  data={expenseTypeOptions}
+  search
+  labelField="label"
+  valueField="value"
+  placeholder="Expense Type"
+  searchPlaceholder="Expense Type"
+
+  value={value}
+  onBlur={onBlur}
+  onChange={(item) => {
+    onChange(item.value); // This should set the value correctly
+    console.log(`Selected Expense Type: ${item.label}`); // Log selected type
+  }}
+/>
         {value && <Text style={styles.floatingLabel}>Expense Type</Text>}
       </View>
       {error && <HelperText type="error" style={styles.errorText}>{error.message}</HelperText>}
     </>
   )}
 />
-              {error && <HelperText type="error" style={styles.errorText}>{error.message}</HelperText>}
-            </>
-          )}
-        />
+
 
      {/* Amount Field */}
      <Controller
@@ -205,27 +321,35 @@ const ExpenseForm = () => {
           )}
         />
 
-        {/* Bill Submitted Field */}
-        <Controller
-          control={control}
-          name="BillSubmitted"
-          rules={{ required: 'Bill Submitted is required' }}
-          render={({ field: { onChange, onBlur, value } }) => (
-            <>
-              <TextInput
-                label="Bill Submitted"
-                mode="outlined"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-                style={styles.input}
-                theme={{ colors: { primary: '#6200ee' } }}
-              />
-              {errors.BillSubmitted && <HelperText type="error" style={styles.errorText}>{errors.BillSubmitted.message}</HelperText>}
-            </>
-          )}
+<Controller
+  control={control}
+  name="BillSubmitted"
+  rules={{ required: 'Bill Submitted status is required' }}
+  render={({ field: { onChange, value, onBlur }, fieldState: { error } }) => (
+    <>
+      <View style={[styles.input1, styles.dropdownContainer, value ? styles.focused : {}]}>
+        <Dropdown
+          style={styles.dropdown}
+          selectedTextStyle={styles.selectedTextStyle}
+          inputSearchStyle={styles.inputSearchStyle}
+          iconStyle={styles.iconStyle}
+          data={BillSubmittedOptions}
+          maxHeight={300}
+          labelField="label"
+          valueField="value"
+          placeholder={value ? '' : 'Bill Submitted'} // Correct placeholder
+          value={value}
+          onBlur={onBlur}
+          onChange={(item) => {
+            onChange(item.value);
+          }}
         />
-
+        {value && <Text style={styles.floatingLabel}>Bill Submitted</Text>}
+      </View>
+      {error && <HelperText type="error" style={styles.errorText}>{error.message}</HelperText>}
+    </>
+  )}
+/>
         {/* KM For Petrol Expenses Field */}
         <Controller
           control={control}
@@ -292,7 +416,7 @@ const ExpenseForm = () => {
         </Button>
 
         {/* Contact Button */}
-        <Button mode="outlined" onPress={() => console.log('Add another expense')} style={styles.addButton}>
+        <Button mode="outlined" onPress={handleSubmit(handleAddAnotherExpense)} style={styles.button}>
           Add Another Expense
         </Button>
         
@@ -363,12 +487,18 @@ const styles = StyleSheet.create({
   form: {
     marginBottom: 20,
   },
-  input: {
+  input:{
     marginBottom: 12,
+  },
+  input1: {
+    marginBottom: 12,
+    backgroundColor: 'rgba(200, 160, 190, 0.04)',
+ 
   },
   dropdownContainer: {
     position: 'relative', // To handle the floating label positioning
     borderColor: '#6200ee',
+    color: 'white',
     borderWidth: 1,
     borderRadius: 4,
     padding: 8,
@@ -386,6 +516,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight:'400',
     color: '#6200ee',
+    
   },
   selectedTextStyle: {
     fontSize: 16,
@@ -408,7 +539,8 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   focused: {
-    borderColor: '#6200ee', // Outline color when focused
+    marginTop:10,
+    borderColor: '#6200ee', 
   },
   contactContainer: {
     marginTop:3,
@@ -434,7 +566,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   icon: {
-    marginHorizontal: 10, // Space between icons
+    marginHorizontal: 10, 
   },
   button: {
     marginVertical: 14,
