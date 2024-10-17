@@ -159,7 +159,7 @@ const BillSubmittedOptions = isDropdown.Bill_submitted.map((type) => ({
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <Title style={styles.title}>Expense Report Submission</Title>
+        <Title style={styles.title}>𝙴𝚇𝙿𝙴𝙽𝚂𝙴 𝚁𝙴𝙿𝙾𝚁𝚃 𝚂𝚄𝙱𝙼𝙸𝚂𝚂𝙸𝙾𝙽</Title>
 
         <View style={styles.dateContainer}>
           <AntDesign onPress={goToPrevDay} name="left" size={24} color="#6200ee" />
@@ -470,7 +470,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   title: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
   },
   dateContainer: {
@@ -532,6 +532,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 12,
+    top: -12,
     color: 'red',
   },
   submitButton: {
