@@ -4,42 +4,86 @@ import { TextInput, Button, Title, HelperText } from 'react-native-paper';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import {  AntDesign,  FontAwesome,  } from "@expo/vector-icons";
 import { useForm, Controller } from 'react-hook-form';
-import {API_URL_FOR_EXPENSE_POST} from "@env"
+import {API_URL_FOR_JOB_REGISTER_POST} from "@env"
 import { Dropdown } from 'react-native-element-dropdown';
-import useDropdownData from '../../../Hooks/useDropdownData';
 import LoadingScreen from './LoadingScreen';
 import useOnline from '../../../Hooks/useOnline';
 import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import useDropdownData from '../../../Hooks/useDropdownData';
 
-const ExpenseForm = () => {
+const JobRegisterReport = () => {
   const isOnline = useOnline(); 
   const router = useRouter();
+  const { dropdownOptions, loading, error } = useDropdownData();
+  
 
   const { control, handleSubmit, formState: { errors } } = useForm();
   const [date, setDate] = useState(new Date());
-  const { dropdownOptions, loading, error } = useDropdownData();
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
 
-  const [isLoading, setIsLoading] = useState(true);  
-  const [isDropdown, setIsDropdown] = useState();  
+  const [isLoading, setIsLoading] = useState(true);   
+  const [isDropdown, setIsDropdown] = useState(); 
 
+  const [userData, setUserData] = useState(null); 
+
+  const [EmployeeName,setEmployeeName]=useState('name'); // State to store AsyncStorage data
+
+  const getUserData = async () => {
+    try {
+      const data = await AsyncStorage.getItem('@user_data');
+      console.log('User data from AsyncStorage:', data);
+      if (data) {
+        setUserData(JSON.parse(data)); // Update userData state
+      } else {  
+        console.log('No user data found in AsyncStorage');
+      }
+    } catch (error) {
+      console.log('Error fetching user data from AsyncStorage:', error);
+    }
+  };
+  
+  // useEffect to fetch user data on component mount
+  useEffect(() => {
+    getUserData();
+  }, []);
+  
+  // New useEffect to set EmployeeName after userData is updated
+  useEffect(() => {
+    if (userData) {
+      setIsLoading(false);
+      setEmployeeName(`${userData.firstName} ${userData.lastname}`); // Concatenate first and last names
+    }
+  }, [userData]); // Trigger when userData is updated
+  
+  console.log("Employee Name:", EmployeeName);
+
+ 
   const onSubmit = async (data) => {
+    console.log( data);
     const formDatab = new FormData();
-    formDatab.append('DateAndDay', data.DateDateAndDay || date.toDateString());
-    formDatab.append('Category', data.Category);
+    console.log(date.toDateString());
+    formDatab.append('Date',date.toDateString());
+    formDatab.append('EmployeeName', EmployeeName);
+    formDatab.append('WorkingStatus', data.WorkingStatus);
+    formDatab.append('VisitType', data.VisitType);
     formDatab.append('City', data.City);
-    formDatab.append('ExpenseType', data.ExpenseType);
-    formDatab.append('Amount', data.Amount);
-    formDatab.append('Description', data.Description);
-    formDatab.append('BillSubmitted', data.BillSubmitted);
-    formDatab.append('KMForPetrolExpenses', data.KMForPetrolExpenses);
-    formDatab.append('ReferenceForKMCalculation', data.ReferenceForKMCalculation);
-    formDatab.append('DetailsOrRemarks', data.DetailsOrRemarks);
+    formDatab.append('Customer', data.Customer);
+    formDatab.append('ContactPerson', data.ContactPerson);
+    formDatab.append('JobType', data.JobType);
+    formDatab.append('Instrument', data.Instrument);
+    formDatab.append('SerialNo', data.SerialNo);
+    formDatab.append('JobCode', data.JobCode);
+    formDatab.append('AccompaniedBy', data.AccompaniedBy);
+    
+
+    formDatab.append('DetailsOfWorks', data.DetailsOfWorks  );
+
 
     console.log("Submitted Form Data: ", formDatab);
-    
-    /*try {
-      const response = await fetch(API_URL_FOR_EXPENSE_POST, {
+
+    try {
+      const response = await fetch(API_URL_FOR_JOB_REGISTER_POST, {
         method: 'POST',
         body: formDatab,
       });
@@ -58,7 +102,9 @@ const ExpenseForm = () => {
     } catch (error) {
       console.error('Error:', error);
       Alert.alert('Error', 'Failed to submit the form.');
-    }*/
+    }
+  
+  
   };
 
   const handleAddAnotherExpense = async (data) => {
@@ -68,25 +114,24 @@ const ExpenseForm = () => {
     router.push('./Mark_Expense_Report'); // Navigate after form submission is done
   };
 
- 
- 
-  
   useEffect(() => {
     if (dropdownOptions) {
      
-      setIsDropdown(dropdownOptions[0])
+      setIsDropdown(dropdownOptions[0]);
+      
+      console.log( dropdownOptions[0]);
        // Stop loading once user data is available
     }
   }, [dropdownOptions]);
-
-  useEffect(() => {
-    if (isDropdown) {
-      setIsLoading(false);
-     
-       // Stop loading once user data is available
-    }
-  }, [isDropdown]);
 // Loading state
+useEffect(() => {
+  if (isDropdown) {
+    setIsLoading(false);
+   
+   
+     // Stop loading once user data is available
+  }
+}, [isDropdown]);
 
   
  if (!isOnline) {
@@ -97,42 +142,50 @@ const ExpenseForm = () => {
     return <LoadingScreen />;
   }
 
-  console.log(isDropdown);
- 
-
-   /*Transform the data1 to dropdown format
-   const categoryOptions = isDropdown.Category.map((category) => ({
+//W
+  const Working_StatusOptions= isDropdown?.Working_Status?.map((category) => ({
     label: category,
     value: category
-  }));
+  })) || [];
   
-  const expenseTypeOptions = isDropdown.Expense_Type.map((type) => ({
+  //
+  const Visit_Type_dropdownoptions = isDropdown?.Visit_Type?.map((type) => ({
     label: type,
     value: type
-  }));
+  })) || [];
   
   
-  
-const cityOptions = isDropdown.City.map((city) => ({
+  const cityOptions = isDropdown?.City?.map((city) => ({
     label: city,
     value: city
-  }));
    
-const BillSubmittedOptions = isDropdown.Bill_submitted.map((type) => ({
+  })) || [];
+  
+  const CustomerOptions = isDropdown?.["Customer "]?.map((type) => ({
+    label: type,
+    value: type,
+  })) || [];
+  
+
+  
+  const Job_Type_Options=isDropdown?.Job_Type?.map((type) => ({
     label: type,
     value: type
-  }));*/
-  const data = [
-    { label: 'Item 1', value: '1' },
-    { label: 'Item 2', value: '2' },
-    { label: 'Item 3', value: '3' },
-    { label: 'Item 4', value: '4' },
-    { label: 'Item 5', value: '5' },
-    { label: 'Item 6', value: '6' },
-    { label: 'Item 7', value: '7' },
-    { label: 'Item 8', value: '8' },
-  ];
+  })) || [];
+
   
+
+  //Instrument
+  const Instrument_Options=isDropdown?.["Instrument "]?.map((type) => ({
+    label: type,
+    value: type
+  })) || [];
+
+  const Accompanied_by_Options=isDropdown?.Accompanied_by?.map((type) => ({
+    label: type,
+    value: type
+  })) || [];
+ 
   
   
 
@@ -162,7 +215,9 @@ const BillSubmittedOptions = isDropdown.Bill_submitted.map((type) => ({
   };
 
   const formatDate = (date) => {
+   
     return date.toDateString();
+
   };
 
   return (
@@ -189,7 +244,7 @@ const BillSubmittedOptions = isDropdown.Bill_submitted.map((type) => ({
       <View style={styles.form}>
       <Controller
   control={control}
-  name="Working Status"
+  name="WorkingStatus"
   rules={{ required: 'Working Status is required' }}
   render={({ field: { onChange, value, onBlur }, fieldState: { error } }) => (
     <>
@@ -199,7 +254,7 @@ const BillSubmittedOptions = isDropdown.Bill_submitted.map((type) => ({
           selectedTextStyle={styles.selectedTextStyle}
           inputSearchStyle={styles.inputSearchStyle}
           iconStyle={styles.iconStyle}
-          data={data}
+          data={ Working_StatusOptions}
           search
           maxHeight={300}
           labelField="label"
@@ -222,7 +277,7 @@ const BillSubmittedOptions = isDropdown.Bill_submitted.map((type) => ({
 />
 <Controller
   control={control}
-  name="Visit Type" // Corrected field name
+  name="VisitType" // Corrected field name
   rules={{ required: 'Visit Type is required' }}
   render={({ field: { onChange, value, onBlur }, fieldState: { error } }) => (
     <>
@@ -232,7 +287,7 @@ const BillSubmittedOptions = isDropdown.Bill_submitted.map((type) => ({
    selectedTextStyle={styles.selectedTextStyle}
    inputSearchStyle={styles.inputSearchStyle}
    iconStyle={styles.iconStyle}
-   data={data}
+   data={Visit_Type_dropdownoptions}
    search
   labelField="label"
   valueField="value"
@@ -265,7 +320,7 @@ const BillSubmittedOptions = isDropdown.Bill_submitted.map((type) => ({
   selectedTextStyle={styles.selectedTextStyle}
   inputSearchStyle={styles.inputSearchStyle}
   iconStyle={styles.iconStyle}
-  data={data}
+  data={cityOptions}
   search
   labelField="label"
   valueField="value"
@@ -285,9 +340,10 @@ const BillSubmittedOptions = isDropdown.Bill_submitted.map((type) => ({
     </>
   )}
 />
+
 <Controller
   control={control}
-  name="Customer " // Corrected field name
+  name="Customer" // Corrected field name
   rules={{ required: 'Customer  is required' }}
   render={({ field: { onChange, value, onBlur }, fieldState: { error } }) => (
     <>
@@ -297,7 +353,7 @@ const BillSubmittedOptions = isDropdown.Bill_submitted.map((type) => ({
   selectedTextStyle={styles.selectedTextStyle}
   inputSearchStyle={styles.inputSearchStyle}
   iconStyle={styles.iconStyle}
-  data={data}
+  data={CustomerOptions}
   search
   labelField="label"
   valueField="value"
@@ -322,7 +378,7 @@ const BillSubmittedOptions = isDropdown.Bill_submitted.map((type) => ({
      {/* Amount Field */}
      <Controller
           control={control}
-          name="Contact Person "
+          name="ContactPerson"
           rules={{ required: 'Contact Person  is required' }}
           render={({ field: { onChange, onBlur, value } }) => (
             <>
@@ -340,31 +396,11 @@ const BillSubmittedOptions = isDropdown.Bill_submitted.map((type) => ({
             </>
           )}
         />
-
-        {/* Description Field */}
-        <Controller
-          control={control}
-          name="Description"
-          rules={{ required: 'Description is required' }}
-          render={({ field: { onChange, onBlur, value } }) => (
-            <>
-              <TextInput
-                label="Description"
-                mode="outlined"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-                style={styles.input}
-                theme={{ colors: { primary: '#6200ee' } }}
-              />
-              {errors.Description && <HelperText type="error" style={styles.errorText}>{errors.Description.message}</HelperText>}
-            </>
-          )}
-        />
+       
 
 <Controller
   control={control}
-  name="Job Type"
+  name="JobType"
   rules={{ required: 'Job Type is required' }}
   render={({ field: { onChange, value, onBlur }, fieldState: { error } }) => (
     <>
@@ -374,7 +410,7 @@ const BillSubmittedOptions = isDropdown.Bill_submitted.map((type) => ({
           selectedTextStyle={styles.selectedTextStyle}
           inputSearchStyle={styles.inputSearchStyle}
           iconStyle={styles.iconStyle}
-          data={data}
+          data={Job_Type_Options}
           search
   labelField="label"
   valueField="value"
@@ -387,39 +423,8 @@ const BillSubmittedOptions = isDropdown.Bill_submitted.map((type) => ({
     onChange(item.value); // This should set the value correctly
     console.log(`Selected Expense Type: ${item.label}`); // Log selected type
   }}
-  ></Dropdown>
-        {value && <Text style={styles.floatingLabel}>Job Type</Text>}
-      </View>
-      {error && <HelperText type="error" style={styles.errorText}>{error.message}</HelperText>}
-    </>
-  )}
 />
-<Controller
-  control={control}
-  name="Instrument Model"
-  rules={{ required: 'Instrument Model is required' }}
-  render={({ field: { onChange, value, onBlur }, fieldState: { error } }) => (
-    <>
-      <View style={[styles.input1, styles.dropdownContainer, value ? styles.focused : {}]}>
-        <Dropdown
-          style={styles.dropdown}
-          selectedTextStyle={styles.selectedTextStyle}
-          inputSearchStyle={styles.inputSearchStyle}
-          iconStyle={styles.iconStyle}
-          search
-          labelField="label"
-          valueField="value"
-          placeholder="Instrument Model "
-          searchPlaceholder="Instrument Model "
-        
-          value={value}
-          onBlur={onBlur}
-          onChange={(item) => {
-            onChange(item.value); // This should set the value correctly
-            console.log(`Selected Expense Type: ${item.label}`); // Log selected type
-          }}
-        />
-        {value && <Text style={styles.floatingLabel}>Instrument Model</Text>}
+        {value && <Text style={styles.floatingLabel}>Job Type</Text>}
       </View>
       {error && <HelperText type="error" style={styles.errorText}>{error.message}</HelperText>}
     </>
@@ -428,7 +433,78 @@ const BillSubmittedOptions = isDropdown.Bill_submitted.map((type) => ({
 
 <Controller
   control={control}
-  name="Accompanied by"
+  name="Instrument"
+  rules={{ required: 'Job Type is required' }}
+  render={({ field: { onChange, value, onBlur }, fieldState: { error } }) => (
+    <>
+      <View style={[styles.input1, styles.dropdownContainer, value ? styles.focused : {}]}>
+        <Dropdown
+          style={styles.dropdown}
+          selectedTextStyle={styles.selectedTextStyle}
+          inputSearchStyle={styles.inputSearchStyle}
+          iconStyle={styles.iconStyle}
+          data={Instrument_Options}
+          search
+  labelField="label"
+  valueField="value"
+  placeholder="Instrument Model "
+  searchPlaceholder="Instrument Model  "
+
+  value={value}
+  onBlur={onBlur}
+  onChange={(item) => {
+    onChange(item.value); // This should set the value correctly
+    console.log(`Selected Expense Type: ${item.label}`); // Log selected type
+  }}
+/>
+        {value && <Text style={styles.floatingLabel}>Instrument Model</Text>}
+      </View>
+      {error && <HelperText type="error" style={styles.errorText}>{error.message}</HelperText>}
+    </>
+  )}
+/>
+<Controller
+          control={control}
+          name="SerialNo"
+          render={({ field: { onChange, onBlur, value } }) => (
+            <>
+              <TextInput
+                label="Serial No "
+                mode="outlined"
+                keyboardType="numeric"
+                onBlur={onBlur}
+                onChangeText={onChange}
+                value={value}
+                style={styles.input}
+                theme={{ colors: { primary: '#6200ee' } }}
+              />
+            </>
+          )}
+        />
+
+
+<Controller
+          control={control}
+          name="JobCode"
+          render={({ field: { onChange, onBlur, value } }) => (
+            <>
+              <TextInput
+                label="Job Code "
+                mode="outlined"
+                keyboardType="numeric"
+                onBlur={onBlur}
+                onChangeText={onChange}
+                value={value}
+                style={styles.input}
+                theme={{ colors: { primary: '#6200ee' } }}
+              />
+            </>
+          )}
+        />
+
+<Controller
+  control={control}
+  name="AccompaniedBy"
   rules={{ required: 'Accompanied by is required' }}
   render={({ field: { onChange, value, onBlur }, fieldState: { error } }) => (
     <>
@@ -438,7 +514,7 @@ const BillSubmittedOptions = isDropdown.Bill_submitted.map((type) => ({
           selectedTextStyle={styles.selectedTextStyle}
           inputSearchStyle={styles.inputSearchStyle}
           iconStyle={styles.iconStyle}
-          data={data}
+          data={Accompanied_by_Options}
           search
           labelField="label"
           valueField="value"
@@ -459,58 +535,10 @@ const BillSubmittedOptions = isDropdown.Bill_submitted.map((type) => ({
   )}
 />
 
-<Controller
-  control={control}
-  name="Job Status"
-  rules={{ required: 'Job Status is required' }}
-  render={({ field: { onChange, value, onBlur }, fieldState: { error } }) => (
-    <>
-      <View style={[styles.input1, styles.dropdownContainer, value ? styles.focused : {}]}>
-        <Dropdown
-          style={styles.dropdown}
-          selectedTextStyle={styles.selectedTextStyle}
-          inputSearchStyle={styles.inputSearchStyle}
-          iconStyle={styles.iconStyle}
-          data={data}
-          search
-          labelField="label"
-          valueField="value"
-          placeholder="Job Status "
-          searchPlaceholder="Job Status "
-        
-          value={value}
-          onBlur={onBlur}
-          onChange={(item) => {
-            onChange(item.value); // This should set the value correctly
-            console.log(`Selected Expense Type: ${item.label}`); // Log selected type
-          }}
-        />
-        {value && <Text style={styles.floatingLabel}>Job Status</Text>}
-      </View>
-      {error && <HelperText type="error" style={styles.errorText}>{error.message}</HelperText>}
-    </>
-  )}
-/>
+
 
         {/* KM For Petrol Expenses Field */}
-        <Controller
-          control={control}
-          name="Serial No "
-          render={({ field: { onChange, onBlur, value } }) => (
-            <>
-              <TextInput
-                label="Serial No "
-                mode="outlined"
-                keyboardType="numeric"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-                style={styles.input}
-                theme={{ colors: { primary: '#6200ee' } }}
-              />
-            </>
-          )}
-        />
+        
 
         
         
@@ -518,7 +546,7 @@ const BillSubmittedOptions = isDropdown.Bill_submitted.map((type) => ({
         {/* Details or Remarks Field */}
         <Controller
           control={control}
-          name="DetailsOrRemarks"
+          name="DetailsOfWorks"
           render={({ field: { onChange, onBlur, value } }) => (
             <>
               <TextInput
@@ -701,4 +729,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ExpenseForm;
+export default JobRegisterReport;

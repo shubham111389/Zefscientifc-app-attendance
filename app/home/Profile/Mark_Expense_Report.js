@@ -10,6 +10,7 @@ import useDropdownData from '../../../Hooks/useDropdownData';
 import LoadingScreen from './LoadingScreen';
 import useOnline from '../../../Hooks/useOnline';
 import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ExpenseForm = () => {
   const isOnline = useOnline(); 
@@ -19,13 +20,46 @@ const ExpenseForm = () => {
   const [date, setDate] = useState(new Date());
   const { dropdownOptions, loading, error } = useDropdownData();
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+  console.log( dropdownOptions);
+  const [isLoading, setIsLoading] = useState(false);  
+  const [isDropdown, setIsDropdown] = useState(); 
+  const [userData, setUserData] = useState(null); 
+  const [EmployeeName,setEmployeeName]=useState( 'name'); // State to store AsyncStorage data
 
-  const [isLoading, setIsLoading] = useState(true);  
-  const [isDropdown, setIsDropdown] = useState();  
+  const getUserData = async () => {
+    try {
+      const data = await AsyncStorage.getItem('@user_data');
+      console.log('User data from AsyncStorage:', data);
+      if (data) {
+        setUserData(JSON.parse(data)); // Update userData state
+      } else {  
+        console.log('No user data found in AsyncStorage');
+      }
+    } catch (error) {
+      console.log('Error fetching user data from AsyncStorage:', error);
+    }
+  };
+  
+  // useEffect to fetch user data on component mount
+  useEffect(() => {
+    getUserData();
+  }, []);
+  
+  // New useEffect to set EmployeeName after userData is updated
+  useEffect(() => {
+    if (userData) {
+      setEmployeeName(`${userData.firstName} ${userData.lastname}`); // Concatenate first and last names
+    }
+  }, [userData]); // Trigger when userData is updated
+  
+  console.log("Employee Name:", EmployeeName);
+
+ 
 
   const onSubmit = async (data) => {
     const formDatab = new FormData();
     formDatab.append('DateAndDay', data.DateDateAndDay || date.toDateString());
+    formDatab.append('EmployeeName', EmployeeName);
     formDatab.append('Category', data.Category);
     formDatab.append('City', data.City);
     formDatab.append('ExpenseType', data.ExpenseType);
@@ -75,6 +109,7 @@ const ExpenseForm = () => {
     if (dropdownOptions) {
      
       setIsDropdown(dropdownOptions[0])
+      console.log( dropdownOptions);
        // Stop loading once user data is available
     }
   }, [dropdownOptions]);
@@ -97,7 +132,6 @@ const ExpenseForm = () => {
     return <LoadingScreen />;
   }
 
-  console.log(isDropdown);
  
 
    // Transform the data1 to dropdown format

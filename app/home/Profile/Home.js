@@ -166,7 +166,7 @@ const Home = () => {
             }}
           >
             <Pressable
-            onPress={() => router.push("/home/Profile/Job_Register_report")}
+            onPress={() => router.push("/home/Profile/Job_Register_Report")}
               style={{
                 backgroundColor: "#BE93C5",
                 borderRadius: 6,
@@ -189,6 +189,8 @@ const Home = () => {
               >
             <MaterialIcons name="work-outline" size={24} color="black" />
               </View>
+
+              
               <Text
                 style={{
                   marginLeft: 10,
@@ -213,8 +215,8 @@ const Home = () => {
               </View>
             </Pressable>
             <Pressable
-                onPress={() => router.push("/(home)/summary")}
-              style={{
+              onPress={() => router.push("/home/Profile/Expense_Report  ")}           
+               style={{
                 backgroundColor: "#BE93C5",
                 borderRadius: 6,
                 padding: 10,
@@ -428,7 +430,7 @@ const Home = () => {
             
           </View>
         
-    <View style={{ alignItems: "center", marginTop: 10 }}>
+    <View style={{ alignItems: "center", marginTop: 10,marginBottom:4 }}>
       <Text style={{ color: "#36454F", fontSize: 12 }}>
         © 2024 ZEF SCIENTIFIC IND PVT LTD. All rights reserved.
       </Text>
