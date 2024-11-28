@@ -20,18 +20,21 @@ const ExpenseForm = () => {
   const [date, setDate] = useState(new Date());
   const { dropdownOptions, loading, error } = useDropdownData();
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
-  console.log( dropdownOptions);
-  const [isLoading, setIsLoading] = useState(false);  
-  const [isDropdown, setIsDropdown] = useState(); 
+
+  const [isLoading, setIsLoading] = useState(true);  
+  const [isDropdown, setIsDropdown] = useState();  
   const [userData, setUserData] = useState(null); 
-  const [EmployeeName,setEmployeeName]=useState( 'name'); // State to store AsyncStorage data
+
+  const [EmployeeName, setEmployeeName] = useState("name");
 
   const getUserData = async () => {
     try {
       const data = await AsyncStorage.getItem('@user_data');
+      console.log( data );
       console.log('User data from AsyncStorage:', data);
       if (data) {
-        setUserData(JSON.parse(data)); // Update userData state
+        setUserData(JSON.parse(data));
+        console.log(userData); // Update userData state
       } else {  
         console.log('No user data found in AsyncStorage');
       }
@@ -48,18 +51,19 @@ const ExpenseForm = () => {
   // New useEffect to set EmployeeName after userData is updated
   useEffect(() => {
     if (userData) {
-      setEmployeeName(`${userData.firstName} ${userData.lastname}`); // Concatenate first and last names
+      setEmployeeName(`${userData.firstName} ${userData.lastName}`); // Concatenate first and last names
     }
-  }, [userData]); // Trigger when userData is updated
-  
-  console.log("Employee Name:", EmployeeName);
-
+  }, [userData]);
+   // Trigger when userData is updated
  
+  console.log("Employee Name:", EmployeeName);
 
   const onSubmit = async (data) => {
     const formDatab = new FormData();
     formDatab.append('DateAndDay', data.DateDateAndDay || date.toDateString());
     formDatab.append('EmployeeName', EmployeeName);
+    console.log ( EmployeeName);
+
     formDatab.append('Category', data.Category);
     formDatab.append('City', data.City);
     formDatab.append('ExpenseType', data.ExpenseType);
@@ -109,7 +113,6 @@ const ExpenseForm = () => {
     if (dropdownOptions) {
      
       setIsDropdown(dropdownOptions[0])
-      console.log( dropdownOptions);
        // Stop loading once user data is available
     }
   }, [dropdownOptions]);
@@ -132,6 +135,7 @@ const ExpenseForm = () => {
     return <LoadingScreen />;
   }
 
+  console.log(isDropdown);
  
 
    // Transform the data1 to dropdown format
@@ -504,7 +508,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   title: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: 'bold',
   },
   dateContainer: {
@@ -566,8 +570,8 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 12,
-    top: -12,
     color: 'red',
+    marginTop:-14,
   },
   submitButton: {
     marginTop: 16,

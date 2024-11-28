@@ -2,12 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, ScrollView, TouchableOpacity, Text, PanResponder } from 'react-native';
 import { Title } from 'react-native-paper';
 import { AntDesign } from '@expo/vector-icons';
-import { API_URL_FOR_JOB_REGISTER_POST } from '@env';
+import { API_URL_FOR_JOB_REGISTER_POST} from '@env'; // Ensure you have this in your .env file
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import LoadingScreen from './LoadingScreen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Footer from './Footer';
-import { LinearGradient } from 'expo-linear-gradient';  
 
 // Helper function to format date
 const formatDate = (date) => {
@@ -15,7 +14,7 @@ const formatDate = (date) => {
   return date.toLocaleDateString(undefined, options);
 };
 
-const Job_Register_Report = () => {
+const Job_Register_Report= () => {
   const [date, setDate] = useState(new Date());
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [jobRegisterData, setJobRegisterData] = useState([]);
@@ -36,13 +35,15 @@ const Job_Register_Report = () => {
     }
   };
 
+  // Fetch user data on component mount
   useEffect(() => {
     getUserData();
   }, []);
 
+  // Set EmployeeName after userData is updated
   useEffect(() => {
     if (userData) {
-      setEmployeeName(`${userData.firstName} ${userData.lastname}`);
+      setEmployeeName(`${userData.firstName} ${userData.lastName}`);
     }
   }, [userData]);
 
@@ -52,9 +53,12 @@ const Job_Register_Report = () => {
         const response = await fetch(API_URL_FOR_JOB_REGISTER_POST);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
+          setLoading(false);
         }
         const result = await response.json();
         setJobRegisterData(result.data);
+        console.log(result);
+        
       } catch (error) {
         console.error('Error fetching data:', error);
         setError('Failed to fetch data');
@@ -62,44 +66,95 @@ const Job_Register_Report = () => {
         setLoading(false);
       }
     };
+
     fetchData();
   }, []);
 
-  const showDatePicker = () => setDatePickerVisibility(true);
-  const hideDatePicker = () => setDatePickerVisibility(false);
+  const showDatePicker = () => {
+    setDatePickerVisibility(true);
+  };
+
+  const hideDatePicker = () => {
+    setDatePickerVisibility(false);
+  };
 
   const handleConfirm = (selectedDate) => {
     setDate(selectedDate);
     hideDatePicker();
   };
 
-  const goToPrevDay = () => setDate(new Date(date.setDate(date.getDate() - 1)));
-  const goToNextDay = () => setDate(new Date(date.setDate(date.getDate() + 1)));
+  const goToPrevDay = () => {
+    const previousDay = new Date(date);
+    previousDay.setDate(date.getDate() - 1);
+    setDate(previousDay);
+  };
+
+  const goToNextDay = () => {
+    const nextDay = new Date(date);
+    nextDay.setDate(date.getDate() + 1);
+    setDate(nextDay);
+  };
 
   useEffect(() => {
+    // Format the selected date for comparison
     const formattedSelectedDate = formatDate(date);
-    const filtered = jobRegisterData.filter(
-      (job) => formatDate(new Date(job.Date)) === formattedSelectedDate && job.EmployeeName === employeeName
-    );
+  
+    // Filter the jobRegisterData based on the formatted date and employee name
+    const filtered = jobRegisterData.filter((job) => {
+      // Extract and format the date from the job object
+      const jobDate = formatDate(new Date(job.Date));
+  
+      // Check if the job date matches the selected date
+      const dateMatch = jobDate === formattedSelectedDate;
+  
+      // Check if the employee name matches the provided employeeName
+      const nameMatch = job.EmployeeName.trim().toLowerCase() === employeeName.trim().toLowerCase();
+  
+      // Debugging logs
+      console.log(`Job Date: ${jobDate}, Selected Date: ${formattedSelectedDate}, Are Dates Equal: ${dateMatch}`);
+      console.log(`Job EmployeeName: ${job.EmployeeName}, Filter EmployeeName: ${employeeName}, Are Names Equal: ${nameMatch}`);
+  
+      // Return true if both date and name match
+      return dateMatch && nameMatch;
+    });
+  
+    // Update the filtered data state
     setFilteredData(filtered);
+  
+    // Debugging log for filtered data
+    console.log("Filtered Data: ", filtered);
   }, [date, jobRegisterData, employeeName]);
+  
 
+  // PanResponder to detect swipe gestures
   const panResponder = PanResponder.create({
-    onMoveShouldSetPanResponder: (evt, gestureState) => Math.abs(gestureState.dx) > 20,
+    onMoveShouldSetPanResponder: (evt, gestureState) => Math.abs(gestureState.dx) > 20, // Detect swipe with horizontal movement
     onPanResponderRelease: (evt, gestureState) => {
       if (gestureState.dx > 0) {
-        goToPrevDay();
+        goToPrevDay(); // Swiped right, go to the previous day
       } else if (gestureState.dx < 0) {
-        goToNextDay();
+        goToNextDay(); // Swiped left, go to the next day
       }
     },
   });
 
-  if (loading) return <LoadingScreen />;
-  if (error) return <View style={styles.container}><Text style={styles.errorText}>Error: {error}</Text></View>;
+  if (loading) {
+    return <LoadingScreen />;
+  }
+
+  if (error) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.errorText}>Error: {error}</Text>
+      </View>
+    );
+  }
 
   return (
-    <ScrollView style={styles.container} {...panResponder.panHandlers}>
+    <ScrollView
+      style={styles.container}
+      {...panResponder.panHandlers} // Attach the PanResponder to the ScrollView
+    >
       <View style={styles.header}>
         <Title style={styles.title}>𝙹𝙾𝙱 𝚁𝙴𝙶𝙸𝚂𝚃𝙴𝚁 𝚁𝙴𝙿𝙾𝚁𝚃</Title>
         <View style={styles.dateContainer}>
@@ -122,9 +177,10 @@ const Job_Register_Report = () => {
         onCancel={hideDatePicker}
       />
 
+      {/* Display the filtered expense data */}
       {filteredData.length > 0 ? (
-        filteredData.map((job) => (
-          <LinearGradient colors={['#9AABFF', '#48E4DC']} style={styles.expenseContainer}>
+        filteredData.map((job, index) => (
+          <View key={index} style={styles.expenseContainer}>
             <Text style={styles.expenseKey}>Working Status:</Text>
             <Text style={styles.expenseValue}>{job.WorkingStatus || 'N/A'}</Text>
             <Text style={styles.expenseKey}>Visit Type:</Text>
@@ -145,9 +201,9 @@ const Job_Register_Report = () => {
             <Text style={styles.expenseValue}>{job.SerialNo || 'N/A'}</Text>
             <Text style={styles.expenseKey}>Accompanied By:</Text>
             <Text style={styles.expenseValue}>{job.AccompaniedBy || 'N/A'}</Text>
-            <Text style={styles.expenseKey}>Details Of Works:</Text>
-            <Text style={styles.expenseValue}>{job.DetailsOfWorks || 'N/A'}</Text>
-          </LinearGradient>
+            <Text style={styles.expenseKey}>Details Of Works :</Text>
+            <Text style={styles.expenseValue}>{job.DetailsOfWorks  || 'N/A'}</Text>
+          </View>
         ))
       ) : (
         <Text style={styles.noDataText}>Heyy! {employeeName}, no Job Register were recorded for this date. Check back later for any updates.</Text>
@@ -161,7 +217,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#f0f4f8',
+    backgroundColor: '#f0f4f8', // Light background color
   },
   header: {
     alignItems: 'center',
@@ -170,7 +226,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#333', // Darker text color
   },
   dateContainer: {
     flexDirection: 'row',
@@ -181,10 +237,12 @@ const styles = StyleSheet.create({
   dateText: {
     marginHorizontal: 10,
     fontSize: 18,
+
   },
   expenseContainer: {
     marginVertical: 10,
     padding: 15,
+    backgroundColor: '#D9EFF7', // White background for expense details
     borderRadius: 12,
     shadowColor: '#000',
     shadowOpacity: 0.1,
@@ -194,13 +252,13 @@ const styles = StyleSheet.create({
   },
   expenseKey: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: 'bold', // Bold style for field keys
     color: '#333',
   },
   expenseValue: {
     fontSize: 16,
     marginBottom: 12,
-    color: '#555',
+    color: '#555', // Softer text color for expense values
   },
   noDataText: {
     marginTop: 20,
@@ -212,7 +270,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: 'red',
     textAlign: 'center',
-  },
+ },
 });
 
 export default Job_Register_Report;

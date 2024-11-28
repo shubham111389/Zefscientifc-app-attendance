@@ -27,7 +27,10 @@ const JobRegisterReport = () => {
 
   const [userData, setUserData] = useState(null); 
 
-  const [EmployeeName,setEmployeeName]=useState('name'); // State to store AsyncStorage data
+  const [EmployeeName,setEmployeeName]=useState('name'); 
+  const [workingStatus, setWorkingStatus] = useState('Working ');
+  const [ visitType,setVisitType]=useState('office');
+  // State to store AsyncStorage dataconst
 
   const getUserData = async () => {
     try {
@@ -52,7 +55,7 @@ const JobRegisterReport = () => {
   useEffect(() => {
     if (userData) {
       setIsLoading(false);
-      setEmployeeName(`${userData.firstName} ${userData.lastname}`); // Concatenate first and last names
+      setEmployeeName(`${userData.firstName} ${userData.lastName}`); // Concatenate first and last names
     }
   }, [userData]); // Trigger when userData is updated
   
@@ -265,7 +268,9 @@ useEffect(() => {
           onBlur={onBlur}
           onChange={(item) => {
             onChange(item.value);
-            console.log(`Selected Item: ${item.label}`);
+            setWorkingStatus(item.value);
+            // Update workingStatus state
+            console.log(`Selected Working Status: ${item.label}`);
           }}
         />
         {/* Floating label effect */}
@@ -275,39 +280,47 @@ useEffect(() => {
     </>
   )}
 />
-<Controller
-  control={control}
-  name="VisitType" // Corrected field name
-  rules={{ required: 'Visit Type is required' }}
-  render={({ field: { onChange, value, onBlur }, fieldState: { error } }) => (
-    <>
-      <View style={[styles.input1, styles.dropdownContainer, value ? styles.focused : {}]}>
-      <Dropdown
-   style={styles.dropdown} // Apply consistent styling
-   selectedTextStyle={styles.selectedTextStyle}
-   inputSearchStyle={styles.inputSearchStyle}
-   iconStyle={styles.iconStyle}
-   data={Visit_Type_dropdownoptions}
-   search
-  labelField="label"
-  valueField="value"
-  placeholder="Visit Type"
-  searchPlaceholder="Visit Type"
-  value={value}
-  onBlur={onBlur}
-  onChange={(item) => {
-    onChange(item.value); // This should set the value correctly
-    console.log(`Selected City: ${item.label}`); // Log selected city
-  }}
-/>
+ {/* After the Working need the space */ }
 
-        {value && <Text style={styles.floatingLabel}>Visit Type</Text>}
-      </View>
-      {error && <HelperText type="error" style={styles.errorText}>{error.message}</HelperText>}
-    </>
-  )}
-/>
+{workingStatus =='Working ' && (
+  <>
+    <Controller
+      control={control}
+      name="VisitType"
+      rules={{ required: 'Visit Type is required' }}
+      render={({ field: { onChange, value, onBlur }, fieldState: { error } }) => (
+        <>
+          <View style={[styles.input1, styles.dropdownContainer, value ? styles.focused : {}]}>
+            <Dropdown
+              style={styles.dropdown}
+              selectedTextStyle={styles.selectedTextStyle}
+              inputSearchStyle={styles.inputSearchStyle}
+              iconStyle={styles.iconStyle}
+              data={Visit_Type_dropdownoptions}
+              search
+              labelField="label"
+              valueField="value"
+              placeholder="Visit Type"
+              searchPlaceholder="Visit Type"
+              value={value}
+              onBlur={onBlur}
+              onChange={(item) =>{ onChange(item.value)
+                setVisitType(item.value);}
+              }
+            />
+            {value && <Text style={styles.floatingLabel}>Visit Type</Text>}
+          </View>
+          {error && <HelperText type="error" style={styles.errorText}>{error.message}</HelperText>}
+        </>
+      )}
+    />
+    {/* Repeat similar blocks for City, Customer, etc. */}
+  </>
+)}
 
+{console.log(  visitType!=='Office' )}
+
+{workingStatus === 'Working ' &&  visitType === 'Outstation ' && 
 <Controller
   control={control}
   name="City" // Corrected field name
@@ -340,7 +353,9 @@ useEffect(() => {
     </>
   )}
 />
+}
 
+{(workingStatus === 'Working ' && visitType!== 'WFH ' && visitType!=='Office')&& 
 <Controller
   control={control}
   name="Customer" // Corrected field name
@@ -373,9 +388,11 @@ useEffect(() => {
     </>
   )}
 />
-
+}
 
      {/* Amount Field */}
+{
+(workingStatus === 'Working ' && visitType!== 'WFH ' && visitType!=='Office') &&    
      <Controller
           control={control}
           name="ContactPerson"
@@ -397,7 +414,9 @@ useEffect(() => {
           )}
         />
        
+}
 
+{(workingStatus === 'Working ' && visitType!== 'WFH ' && visitType!=='Office') && 
 <Controller
   control={control}
   name="JobType"
@@ -430,7 +449,10 @@ useEffect(() => {
     </>
   )}
 />
+}
 
+{
+(workingStatus === 'Working ' && visitType!== 'WFH ' && visitType!=='Office')&& 
 <Controller
   control={control}
   name="Instrument"
@@ -463,6 +485,9 @@ useEffect(() => {
     </>
   )}
 />
+}
+
+{(workingStatus === 'Working ' && visitType!== 'WFH ' && visitType!=='Office') && 
 <Controller
           control={control}
           name="SerialNo"
@@ -482,7 +507,9 @@ useEffect(() => {
           )}
         />
 
+        }
 
+{(workingStatus === 'Working ' && visitType!== 'WFH ' && visitType!=='Office')&& 
 <Controller
           control={control}
           name="JobCode"
@@ -501,7 +528,9 @@ useEffect(() => {
             </>
           )}
         />
+        }
 
+        {(workingStatus === 'Working ' && visitType!== 'WFH ' && visitType!=='Office')&& 
 <Controller
   control={control}
   name="AccompaniedBy"
@@ -535,7 +564,7 @@ useEffect(() => {
   )}
 />
 
-
+}
 
         {/* KM For Petrol Expenses Field */}
         
@@ -544,6 +573,7 @@ useEffect(() => {
         
 
         {/* Details or Remarks Field */}
+ 
         <Controller
           control={control}
           name="DetailsOfWorks"
@@ -563,6 +593,7 @@ useEffect(() => {
             </>
           )}
         />
+  
 
         {/* Submit Button */}
         <Button mode="contained" onPress={handleSubmit(onSubmit)} style={styles.button}>

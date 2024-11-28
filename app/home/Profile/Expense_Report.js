@@ -43,7 +43,8 @@ const ExpenseReport = () => {
   // Set EmployeeName after userData is updated
   useEffect(() => {
     if (userData) {
-      setEmployeeName(`${userData.firstName} ${userData.lastname}`);
+      console.log( userData);
+      setEmployeeName(`${userData.firstName} ${userData.lastName}`);
     }
   }, [userData]);
 
@@ -57,6 +58,7 @@ const ExpenseReport = () => {
         }
         const result = await response.json();
         setAllExpenseData(result.data);
+        console.log( result);
       } catch (error) {
         console.error('Error fetching data:', error);
         setError('Failed to fetch data');
@@ -93,15 +95,26 @@ const ExpenseReport = () => {
     setDate(nextDay);
   };
 
-  useEffect(() => {
+  useEffect(() => { 
     const formattedSelectedDate = formatDate(date);
-    const filtered = allExpenseData.filter(
-      (expense) =>
-        formatDate(new Date(expense.DateAndDay)) === formattedSelectedDate &&
-        expense.EmployeeName === employeeName // Filter by employee name
-    );
+    
+
+    const filtered = allExpenseData.filter((expense) => {
+      console.log( expense);
+        const expenseDate = formatDate(new Date(expense.DateAndDay));
+        const dateMatch = expenseDate === formattedSelectedDate;
+        const nameMatch = expense.EmployeeName.trim().toLowerCase() === employeeName.trim().toLowerCase();
+
+        console.log(`Expense Date: ${expenseDate}, Selected Date: ${formattedSelectedDate}, Are Dates Equal: ${dateMatch}`);
+        console.log(`Expense EmployeeName: ${expense}, Filter EmployeeName: ${employeeName}, Are Names Equal: ${nameMatch}`);
+        
+        return dateMatch && nameMatch;
+    });
+
     setFilteredData(filtered);
-  }, [date, allExpenseData, employeeName]);
+    console.log("Filtered Data: ", filtered);
+}, [date, allExpenseData, employeeName]);
+
 
   // PanResponder to detect swipe gestures
   const panResponder = PanResponder.create({
