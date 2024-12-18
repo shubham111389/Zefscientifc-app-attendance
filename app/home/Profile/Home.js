@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, ScrollView, Pressable, Image } from "react-native";
+import { StyleSheet, Text, View, ScrollView, Pressable, Image, SafeAreaView } from "react-native";
 import { useContext, useState, useEffect } from "react";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from "expo-linear-gradient";
@@ -13,6 +13,7 @@ import LoadingScreen from "./LoadingScreen";
 const Home = () => {
   const isOnline = useOnline(); 
   const router = useRouter();
+  const [userdata,setUserData] = useState();
   const { userDetails } = useUserData();
   const [isLoading, setIsLoading] = useState(true);
 
@@ -21,27 +22,24 @@ const Home = () => {
       const userData = await AsyncStorage.getItem('@user_data');
       if (userData !== null) {
         const user1 = JSON.parse(userData);
-        console.log(user1); // Log the parsed user data only once
-        // Remove the navigation to Home since you're already here
+        setUserData(user1);
+        console.log(user1);
       } else {
-        // If no user session exists, you can navigate to the login screen instead
-        router.push('../Login_form');  // Redirect to login if not logged in
+        router.push('../Login_form');
       }
     } catch (error) {
       console.error('Failed to load user data', error);
     } finally {
-      setIsLoading(false);  // Stop loading after the check
+      setIsLoading(false);
     }
   };
 
-  console.log(userDetails);
-
   useEffect(() => {
     checkUserSession();
-  }, []); // Only run once when the component mounts
+  }, []); 
 
   if (isLoading) {
-    return <LoadingScreen />;  // Properly return the loading screen
+    return <LoadingScreen />;
   }
 
   if (!isOnline) {
@@ -49,426 +47,362 @@ const Home = () => {
   }
 
   return (
-    <ScrollView>
-      <LinearGradient colors={["#7F7FD5", "#E9E4F0"]} style={{ flex: 1 }}>
-        <View style={{ padding: 18 }}>
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
-          >
-            <Image style={{ width: 60, height: 26 }} source={require('../../../assets/icon.png')} />
-            <Text style={{ fontSize: 18, fontWeight: "600" }}>
-              ZEF SCIENTIFIC IND PVT LTD
-            </Text>
-            <Pressable onPress={() => router.push('./User_Profile')}>
-              <FontAwesome name="user-circle" size={26} color="black" />
-            </Pressable>
-          </View>
-
-          <View style={{ flexDirection: "column", marginTop: 20 }}>
-            <View style={{ flexDirection: "row", gap: 20 }}>
+    <View style={styles.container}>
+      <LinearGradient 
+        colors={["#0F1B2C", "#172435"]} 
+        style={styles.gradientBackground}
+      >
+        <View style={styles.header}>
+          <Image 
+            style={styles.logo} 
+            source={require('../../../assets/icon.png')} 
+          />
+          <Text style={styles.companyName}>ZEF SCIENTIFIC IND PVT LTD</Text>
+          <Pressable onPress={() => router.push('./User_Profile')}>
+            <FontAwesome name="user-circle" size={26} color="#3498DB" />
+          </Pressable>
+        </View>
+        
+        <ScrollView 
+          contentContainerStyle={styles.scrollViewContent}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.actionContainer}>
+            <View style={styles.actionRow}>
               <Pressable
-              onPress={()=>(router.push('./Mark_job_register'))}
-                style={{
-                  backgroundColor: "#D3CCE3",
-                  padding: 12,
-                  borderRadius: 6,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flex:  1,
-                }}
+                onPress={() => router.push('./Mark_job_register')}
+                style={styles.actionButton}
               >
-                <View
-                  style={{
-                    width: 50,
-                    height: 50,
-                    borderRadius: 25,
-                    backgroundColor: "white",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <MaterialIcons name="work" size={24} color="black" />
+                <View style={styles.actionIconContainer}>
+                  <MaterialIcons name="work" size={24} color="#3498DB" />
                 </View>
-               <Text style={{ marginTop: 7, fontWeight: "600" }}>
-                  Mark Job Register
-                </Text>
+                <Text style={styles.actionText}>Mark Job Register</Text>
               </Pressable>
 
               <Pressable
                 onPress={() => router.push("./Mark_Expense_Report")}
-                style={{
-                  backgroundColor: "#D3CCE3",
-                  padding: 12,
-                  borderRadius: 6,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flex: 1,
-                }}
+                style={styles.actionButton}
               >
-                <View
-                  style={{
-                    width: 50,
-                    height: 50,
-                    borderRadius: 25,
-                    backgroundColor: "white",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <FontAwesome6 name="wallet" size={24} color="black" />
+                <View style={styles.actionIconContainer}>
+                  <FontAwesome6 name="wallet" size={24} color="#2ECC71" />
                 </View>
-                <Text style={{ marginTop: 7, fontWeight: "600" }}>
-                  Mark Expense Report
-                </Text>
+                <Text style={styles.actionText}>Mark Expense Report</Text>
               </Pressable>
             </View>
 
-            <View style={{ marginTop: 20 }}>
-              <Pressable
-                style={{
-                  backgroundColor: "#D3CCE3", 
-                  borderRadius: 6,
-                  padding: 12,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexDirection: "column",
-                }}
-              >
-                <View
-                  style={{
-                    width: 35,
-                    height: 35,
-                    borderRadius: 7,
-                    backgroundColor: "white",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <FontAwesome5 name="tools" size={24} color="black" />
+            <View style={styles.singleActionContainer}>
+              <Pressable style={styles.singleActionButton}>
+                <View style={styles.singleActionIconContainer}>
+                  <FontAwesome5 name="tools" size={24} color="#9B59B6" />
                 </View>
-                <Text style={{ marginTop: 7 ,fontWeight: "600"}}>Stock List</Text>
+                <Text style={styles.actionText}>Stock List</Text>
               </Pressable>
             </View>
           </View>
-        </View>
-        
-          <View
-            style={{
-              marginTop: 8,
-              backgroundColor: "white",
-              paddingHorizontal: 10,
-              paddingVertical: 10,
-              borderRadius: 7,
-            }}
-          >
+          
+          <View style={styles.reportSection}>
             <Pressable
-            onPress={() => router.push("/home/Profile/Job_Register_Report")}
-              style={{
-                backgroundColor: "#BE93C5",
-                borderRadius: 6,
-                padding: 10,
-                flexDirection: "row",
-                alignItems: "center",
-                marginVertical: 10,
-              }}
+              onPress={() => router.push("/home/Profile/Job_Register_Report")}
+              style={styles.reportButton}
             >
-              <View
-                style={{
-                  padding: 7,
-                  width: 45,
-                  height: 45,
-                  borderRadius: 7,
-                  backgroundColor: "white",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-            <MaterialIcons name="work-outline" size={24} color="black" />
+              <View style={styles.reportIconContainer}>
+                <MaterialIcons name="work-outline" size={24} color="#3498DB" />
               </View>
+              <Text style={styles.reportText}>Job Register Report</Text>
+              <View style={styles.reportChevronContainer}>
+                <Entypo name="chevron-right" size={24} color="#E67E22" />
+              </View>
+            </Pressable>
 
-              
-              <Text
-                style={{
-                  marginLeft: 10,
-                  fontSize: 16,
-                  fontWeight: "600",
-                  flex: 1,
-                }}
-              >
-                Job Register Report
-              </Text>
-              <View
-                style={{
-                  width: 35,
-                  height: 35,
-                  borderRadius: 7,
-                  backgroundColor: "white",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Entypo name="chevron-right" size={24} color="black" />
+            <Pressable
+              onPress={() => router.push("/home/Profile/Expense_Report")}
+              style={styles.reportButton}
+            >
+              <View style={styles.reportIconContainer}>
+                <MaterialCommunityIcons name="wallet-outline" size={24} color="#2ECC71" />
+              </View>
+              <Text style={styles.reportText}>Expenses Report</Text>
+              <View style={styles.reportChevronContainer}>
+                <Entypo name="chevron-right" size={24} color="#E67E22" />
               </View>
             </Pressable>
-            <Pressable
-              onPress={() => router.push("/home/Profile/Expense_Report  ")}           
-               style={{
-                backgroundColor: "#BE93C5",
-                borderRadius: 6,
-                padding: 10,
-                flexDirection: "row",
-                alignItems: "center",
-                marginVertical: 10,
-              }}
-            >
-              <View
-                style={{
-                  padding: 7,
-                  width: 45,
-                  height: 45,
-                  borderRadius: 7,
-                  backgroundColor: "white",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <MaterialCommunityIcons name="wallet-outline" size={24} color="black" />
+
+            <Pressable style={styles.reportButton}>
+              <View style={styles.reportIconContainer}>
+                <MaterialIcons name="my-library-books" size={24} color="#9B59B6" />
               </View>
-              <Text
-                style={{
-                  marginLeft: 10,
-                  fontSize: 16,
-                  fontWeight: "600",
-                  flex: 1,
-                }}
-              >
-              Expenses Report 
-              </Text>
-              <View
-                style={{
-                  width: 35,
-                  height: 35,
-                  borderRadius: 7,
-                  backgroundColor: "white",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Entypo name="chevron-right" size={24} color="black" />
+              <Text style={styles.reportText}>All Instruments Manuals</Text>
+              <View style={styles.reportChevronContainer}>
+                <Entypo name="chevron-right" size={24} color="#E67E22" />
               </View>
             </Pressable>
-            <Pressable
-              style={{
-                backgroundColor: "#BE93C5",
-                borderRadius: 6,
-                padding: 10,
-                flexDirection: "row",
-                alignItems: "center",
-                marginVertical: 10,
-              }}
-            >
-              <View
-                style={{
-                  padding: 7,
-                  width: 45,
-                  height: 45,
-                  borderRadius: 7,
-                  backgroundColor: "white",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <MaterialIcons name="my-library-books" size={24} color="black" />
+
+            <Pressable style={styles.reportButton}>
+              <View style={styles.reportIconContainer}>
+                <MaterialCommunityIcons name="lightbulb-group-outline" size={24} color="#1ABC9C" />
               </View>
-              <Text
-                style={{
-                  marginLeft: 10,
-                  fontSize: 16,
-                  fontWeight: "600",
-                  flex: 1,
-                }}
-              >
-                All Instruments Manuals
-              </Text>
-              <View
-                style={{
-                  width: 35,
-                  height: 35,
-                  borderRadius: 7,
-                  backgroundColor: "white",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Entypo name="chevron-right" size={24} color="black" />
-              </View>
-            </Pressable>
-            <Pressable
-              style={{
-                backgroundColor: "#BE93C5",
-                borderRadius: 6,
-                padding: 10,
-                flexDirection: "row",
-                alignItems: "center",
-                marginVertical: 10,
-              }}
-            >
-              <View
-                style={{
-                  padding: 7,
-                  width: 45,
-                  height: 45,
-                  borderRadius: 7,
-                  backgroundColor: "white",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <MaterialCommunityIcons name="lightbulb-group-outline" size={24} color="black" />
-              </View>
-              <Text
-                style={{
-                  marginLeft: 10,
-                  fontSize: 16,
-                  fontWeight: "600",
-                  flex: 1,
-                }}
-              >
-               Engineers Experiences 
-              </Text>
-              <View
-                style={{
-                  width: 35,
-                  height: 35,
-                  borderRadius: 7,
-                  backgroundColor: "white",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Entypo name="chevron-right" size={24} color="black" />
+              <Text style={styles.reportText}>Engineers Experiences</Text>
+              <View style={styles.reportChevronContainer}>
+                <Entypo name="chevron-right" size={24} color="#E67E22" />
               </View>
             </Pressable>
           </View>
-          <View
-            style={{
-              marginTop: 20,
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 12,
-            }}
-          >
-            <View
-              style={{
-                backgroundColor: "#99e599",
-                borderRadius: 6,
-                padding: 12,
-                alignItems: "center",
 
-                justifyContent: "center",
-                flex: 1,
-              }}
-            >
-              <View
-                style={{
-                  width: 35,
-                  height: 35,
-                  borderRadius: 7,
-                  backgroundColor: "white",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
+          {(userdata?.Profession === 'Manager1' || userDetails?.Profession === 'Manager1') && (
+            <View style={styles.managerSection}>
+              <Pressable 
+                onPress={() => router.push("/home/Profile/Team_data/Teams")}
+                style={styles.managerButton}
               >
-                <MaterialCommunityIcons
-                  name="guy-fawkes-mask"
-                  size={24} 
-                  color="black"
-                />
-              </View>
-              <Text style={{ marginTop: 7,fontWeight:"600" }}> Request Leave</Text>
+                <View style={styles.managerIconContainer}>
+                  <MaterialIcons name="groups-2" size={24} color="#1ABC9C" />
+                </View>
+                <Text style={styles.actionText}>My Team Reports</Text>
+              </Pressable>
             </View>
-            <View
-              style={{
-                backgroundColor: "#99e599",
-                borderRadius: 6,
-                padding: 12,
-                alignItems: "center",
-                justifyContent: "center",
-                flex: 1,
-              }}
-            >
-              <View
-                style={{
-                  width: 35,
-                  height: 35,
-                  borderRadius: 7,
-                  backgroundColor: "white",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <MaterialCommunityIcons name="tools" size={24} color="black" />
+          )}
+
+          <View style={styles.bottomActionsContainer}>
+            <Pressable style={styles.bottomActionButton}>
+              <View style={styles.bottomActionIconContainer}>
+                <MaterialCommunityIcons name="guy-fawkes-mask" size={24} color="#E74C3C" />
               </View>
-              <Text style={{ marginTop: 7,fontWeight:"600" }}>Request Parts</Text>
+              <Text style={styles.actionText}>Request Leave</Text>
+            </Pressable>
+            <Pressable style={styles.bottomActionButton}>
+              <View style={styles.bottomActionIconContainer}>
+                <MaterialCommunityIcons name="tools" size={24} color="#F39C12" />
+              </View>
+              <Text style={styles.actionText}>Request Parts</Text>
+            </Pressable>
+          </View>
+          
+          <View style={styles.footerContainer}>
+            <Text style={styles.copyrightText}>
+              © 2024 ZEF SCIENTIFIC IND PVT LTD. All rights reserved.
+            </Text>
+            <View style={styles.socialIcons}>
+              <FontAwesome name="facebook" size={24} color="#3498DB" style={styles.socialIcon} />
+              <FontAwesome name="twitter" size={24} color="#1DA1F2" style={styles.socialIcon} />
+              <FontAwesome name="linkedin" size={24} color="#0077B5" style={styles.socialIcon} />
+              <FontAwesome name="instagram" size={24} color="#E1306C" style={styles.socialIcon} />
             </View>
           </View>
-          <View
-            style={{
-              marginTop: 20,
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 12,
-            }}
-          >
-        
-          
-            
-            
-          </View>
-        
-    <View style={{ alignItems: "center", marginTop: 10,marginBottom:4 }}>
-      <Text style={{ color: "#36454F", fontSize: 12 }}>
-        © 2024 ZEF SCIENTIFIC IND PVT LTD. All rights reserved.
-      </Text>
-      <View style={{ flexDirection: "row", marginTop: 12 }}>
-        <FontAwesome
-          name="facebook"
-          size={24}
-          color="Gray"
-          style={{ marginHorizontal: 10 }}
-        />
-        <FontAwesome
-          name="twitter"
-          size={24}
-          color="Gray"
-          style={{ marginHorizontal: 10 }}
-        />
-        <FontAwesome
-          name="linkedin"
-          size={24}
-          color="Black"
-          style={{ marginHorizontal: 10 }}
-        />
-        <FontAwesome
-          name="instagram"
-          size={24}
-          color="Black"
-          style={{ marginHorizontal: 10 }}
-        />
-      </View>
-    </View>
-  
-          
-        
+        </ScrollView>
       </LinearGradient>
-    </ScrollView>
+    </View>
   );
 };
 
 export default Home;
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#0F1B2C'
+  },
+  gradientBackground: {
+    flex: 1
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 18,
+    paddingTop: 20,
+    paddingBottom: 20,
+    backgroundColor: '#0F1B2C', // Match the background color
+    zIndex: 1000 // Ensure it stays on top
+  },
+  scrollViewContent: {
+    paddingHorizontal: 18,
+    paddingBottom: 5,
+  },
+  logo: {
+    width: 60, 
+    height: 26,
+    tintColor: '#3498DB' // Modern blue tint
+  },
+  companyName: {
+    fontSize: 18, 
+    fontWeight: "600",
+    color: '#ECF0F1'
+  },
+  actionContainer: {
+    marginBottom: 20
+  },
+  actionRow: {
+    flexDirection: "row", 
+    gap: 20
+  },
+  actionButton: {
+    backgroundColor: "#172435",
+    padding: 12,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#2C3E50'
+  },
+  actionIconContainer: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: "#0F1B2C",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 7,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3
+  },
+  actionText: {
+    color: '#ECF0F1',
+    fontWeight: "600",
+    fontSize: 12,
+    textAlign: 'center'
+  },
+  singleActionContainer: {
+    marginTop: 20
+  },
+  singleActionButton: {
+    backgroundColor: "#172435",
+    borderRadius: 12,
+    padding: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: '#2C3E50'
+  },
+  singleActionIconContainer: {
+    width: 35,
+    height: 35,
+    borderRadius: 7,
+    backgroundColor: "#0F1B2C",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 7,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3
+  },
+  reportSection: {
+    backgroundColor: "#172435",
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderRadius: 12,
+    marginBottom: 20
+  },
+  reportButton: {
+    backgroundColor: "#0F1B2C",
+    borderRadius: 12,
+    padding: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 7,
+    borderWidth: 1,
+    borderColor: '#2C3E50'
+  },
+  reportIconContainer: {
+    padding: 7,
+    width: 45,
+    height: 45,
+    borderRadius: 7,
+    backgroundColor: "#172435",
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  reportText: {
+    marginLeft: 10,
+    fontSize: 16,
+    fontWeight: "600",
+    flex: 1,
+    color: '#ECF0F1'
+  },
+  reportChevronContainer: {
+    width: 35,
+    height: 35,
+    borderRadius: 7,
+    backgroundColor: "#172435",
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  managerSection: {
+    marginBottom: 20
+  },
+  managerButton: {
+    backgroundColor: "#172435", 
+    borderRadius: 12,
+    padding: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: '#2C3E50'
+  },
+  managerIconContainer: {
+    width: 35,
+    height: 35,
+    borderRadius: 7,
+    backgroundColor: "#0F1B2C",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 7,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3
+  },
+  bottomActionsContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    marginBottom: 20
+  },
+  bottomActionButton: {
+    backgroundColor: "#172435",
+    borderRadius: 12,
+    padding: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#2C3E50'
+  },
+  bottomActionIconContainer: {
+    width: 35,
+    height: 35,
+    borderRadius: 7,
+    backgroundColor: "#0F1B2C",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 7,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3
+  },
+  footerContainer: {
+    alignItems: "center", 
+    marginTop: 10,
+    marginBottom: 20
+  },
+  copyrightText: {
+    color: "#7F8C8D", 
+    fontSize: 12,
+    textAlign: 'center'
+  },
+  socialIcons: {
+    flexDirection: "row", 
+    marginTop: 12
+  },
+  socialIcon: {
+    marginHorizontal: 10
+  }
+});
