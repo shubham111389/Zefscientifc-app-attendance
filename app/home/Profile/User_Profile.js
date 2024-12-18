@@ -29,7 +29,11 @@ const User_Profile = () => {
 
   useEffect(() => {
     if (userDetails) {
-      setIsLoading(false);  // Stop loading once user data is available
+      setIsLoading(false); 
+      console.log( userDetails
+
+        
+      ); // Stop loading once user data is available
     }
   }, [userDetails]);
 
@@ -61,7 +65,8 @@ const User_Profile = () => {
   }
 
   // Formatting the joining date
-  const joiningDate = convertFirestoreTimestampToDate(userDetails?.joiningDate);
+  const joiningDate = convertFirestoreTimestampToDate(userDetails?.joining_date
+    );
   const formattedJoiningDate = joiningDate ? joiningDate.toDateString() : '';
 
   return (
@@ -152,6 +157,20 @@ const User_Profile = () => {
                 <Text style={styles.infoSmall_Text}>Profession</Text>
                 <Text style={styles.infoLarge_Text}>
                   {userDetails?.profession || 'Engineer'}
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.infoMain}>
+            <View style={styles.infoCont}>
+              <View style={[styles.infoIconCont, { backgroundColor: '#1e90ff' }]}>
+                <Ionicons name="earth" size={24} style={{ color: 'white' }} />
+              </View>
+              <View style={styles.infoText}>
+                <Text style={styles.infoSmall_Text}>Region</Text>
+                <Text style={styles.infoLarge_Text}>
+                  {userDetails?.region || 'Not Specified'}
                 </Text>
               </View>
             </View>

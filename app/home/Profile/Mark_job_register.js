@@ -96,11 +96,11 @@ const JobRegisterReport = () => {
       if (contentType && contentType.includes('application/json')) {
         const result = await response.json();
         console.log(result);
-        Alert.alert('Success', 'Form submitted successfully!');
+        Alert.alert('Success', 'Your Job Register submitted successfully!');
       } else {
         const result = await response.text();
         console.log('Response is not JSON:', result);
-        Alert.alert('Success', result);
+        Alert.alert('Success', 'Your Job Register submitted successfully!');
       }
     } catch (error) {
       console.error('Error:', error);
