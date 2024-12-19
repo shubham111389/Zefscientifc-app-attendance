@@ -226,14 +226,14 @@ useEffect(() => {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <Title style={styles.title}> 𝙹𝙾𝙱 𝚁𝙴𝙶𝙸𝚂𝚃𝙴𝚁 𝚂𝚄𝙱𝙼𝙸𝚂𝚂𝙸𝙾𝙽</Title>
+        <Title style={styles.title}>𝙹𝙾𝙱 𝚁𝙴𝙶𝙸𝚂𝚃𝙴𝚁 𝚂𝚄𝙱𝙼𝙸𝚂𝚂𝙸𝙾𝙽</Title>
 
         <View style={styles.dateContainer}>
-          <AntDesign onPress={goToPrevDay} name="left" size={24} color="#6200ee" />
+          <AntDesign onPress={goToPrevDay} name="left" size={24} color="#3498DB" />
           <TouchableOpacity onPress={showDatePicker}>
             <Text style={styles.dateText}>{formatDate(date)}</Text>
           </TouchableOpacity>
-          <AntDesign onPress={goToNextDay} name="right" size={24} color="#6200ee" />
+          <AntDesign onPress={goToNextDay} name="right" size={24} color="#3498DB" />
         </View>
       </View>
 
@@ -245,401 +245,339 @@ useEffect(() => {
       />
 
       <View style={styles.form}>
-      <Controller
-  control={control}
-  name="WorkingStatus"
-  rules={{ required: 'Working Status is required' }}
-  render={({ field: { onChange, value, onBlur }, fieldState: { error } }) => (
-    <>
-      <View style={[styles.input1, styles.dropdownContainer, value ? styles.focused : {}]}>
-        <Dropdown
-          style={styles.dropdown} // Apply consistent styling
-          selectedTextStyle={styles.selectedTextStyle}
-          inputSearchStyle={styles.inputSearchStyle}
-          iconStyle={styles.iconStyle}
-          data={ Working_StatusOptions}
-          search
-          maxHeight={300}
-          labelField="label"
-          valueField="value"
-          placeholder={value ? '' : 'Working Status'} // Float placeholder when value exists
-          searchPlaceholder="Working Status"
-          value={value}
-          onBlur={onBlur}
-          onChange={(item) => {
-            onChange(item.value);
-            setWorkingStatus(item.value);
-            // Update workingStatus state
-            console.log(`Selected Working Status: ${item.label}`);
-          }}
+        <Controller
+          control={control}
+          name="WorkingStatus"
+          rules={{ required: 'Working Status is required' }}
+          render={({ field: { onChange, value, onBlur }, fieldState: { error } }) => (
+            <>
+              <View style={[styles.inputContainer, value ? styles.focusedInput : {}]}>
+                <Dropdown
+                  style={[styles.dropdown]}
+                  selectedTextStyle={styles.inputText}
+                  inputSearchStyle={styles.searchInput}
+                  iconStyle={styles.iconStyle}
+                  data={Working_StatusOptions}
+                  search
+                  maxHeight={300}
+                  labelField="label"
+                  valueField="value"
+                  placeholder={value ? '' : 'Working Status'}
+                  searchPlaceholder="Working Status"
+                  value={value}
+                  onBlur={onBlur}
+                  onChange={(item) => {
+                    onChange(item.value);
+                    setWorkingStatus(item.value);
+                  }}
+                  placeholderStyle={styles.placeholderText}
+                />
+                {value && <Text style={styles.floatingLabel}>Working Status</Text>}
+              </View>
+              {error && <HelperText type="error" style={styles.errorText}>{error.message}</HelperText>}
+            </>
+          )}
         />
-        {/* Floating label effect */}
-        {value && <Text style={styles.floatingLabel}>Working Status</Text>}
-      </View>
-      {error && <HelperText type="error" style={styles.errorText}>{error.message}</HelperText>}
-    </>
-  )}
-/>
- {/* After the Working need the space */ }
 
-{workingStatus =='Working ' && (
-  <>
-    <Controller
-      control={control}
-      name="VisitType"
-      rules={{ required: 'Visit Type is required' }}
-      render={({ field: { onChange, value, onBlur }, fieldState: { error } }) => (
-        <>
-          <View style={[styles.input1, styles.dropdownContainer, value ? styles.focused : {}]}>
-            <Dropdown
-              style={styles.dropdown}
-              selectedTextStyle={styles.selectedTextStyle}
-              inputSearchStyle={styles.inputSearchStyle}
-              iconStyle={styles.iconStyle}
-              data={Visit_Type_dropdownoptions}
-              search
-              labelField="label"
-              valueField="value"
-              placeholder="Visit Type"
-              searchPlaceholder="Visit Type"
-              value={value}
-              onBlur={onBlur}
-              onChange={(item) =>{ onChange(item.value)
-                setVisitType(item.value);}
-              }
+        {workingStatus === 'Working ' && (
+          <Controller
+            control={control}
+            name="VisitType"
+            rules={{ required: 'Visit Type is required' }}
+            render={({ field: { onChange, value, onBlur }, fieldState: { error } }) => (
+              <>
+                <View style={[styles.inputContainer, value ? styles.focusedInput : {}]}>
+                  <Dropdown
+                    style={styles.dropdown}
+                    selectedTextStyle={styles.inputText}
+                    inputSearchStyle={styles.searchInput}
+                    iconStyle={styles.iconStyle}
+                    data={Visit_Type_dropdownoptions}
+                    search
+                    labelField="label"
+                    valueField="value"
+                    placeholder="Visit Type"
+                    searchPlaceholder="Visit Type"
+                    value={value}
+                    onBlur={onBlur}
+                    onChange={(item) => {
+                      onChange(item.value);
+                      setVisitType(item.value);
+                    }}
+                    placeholderStyle={styles.placeholderText}
+                  />
+                  {value && <Text style={styles.floatingLabel}>Visit Type</Text>}
+                </View>
+                {error && <HelperText type="error" style={styles.errorText}>{error.message}</HelperText>}
+              </>
+            )}
+          />
+        )}
+
+        {workingStatus === 'Working ' && visitType === 'Outstation ' && (
+          <Controller
+            control={control}
+            name="City"
+            rules={{ required: 'City is required' }}
+            render={({ field: { onChange, value, onBlur }, fieldState: { error } }) => (
+              <>
+                <View style={[styles.inputContainer, value ? styles.focusedInput : {}]}>
+                  <Dropdown
+                    style={styles.dropdown}
+                    selectedTextStyle={styles.inputText}
+                    inputSearchStyle={styles.searchInput}
+                    iconStyle={styles.iconStyle}
+                    data={cityOptions}
+                    search
+                    labelField="label"
+                    valueField="value"
+                    placeholder="City"
+                    searchPlaceholder="City"
+                    value={value}
+                    onBlur={onBlur}
+                    onChange={(item) => onChange(item.value)}
+                    placeholderStyle={styles.placeholderText}
+                  />
+                  {value && <Text style={styles.floatingLabel}>City</Text>}
+                </View>
+                {error && <HelperText type="error" style={styles.errorText}>{error.message}</HelperText>}
+              </>
+            )}
+          />
+        )}
+
+        {workingStatus === 'Working ' && visitType !== 'WFH ' && visitType !== 'Office' && (
+          <>
+            <Controller
+              control={control}
+              name="Customer"
+              rules={{ required: 'Customer is required' }}
+              render={({ field: { onChange, value, onBlur }, fieldState: { error } }) => (
+                <>
+                  <View style={[styles.inputContainer, value ? styles.focusedInput : {}]}>
+                    <Dropdown
+                      style={styles.dropdown}
+                      selectedTextStyle={styles.inputText}
+                      inputSearchStyle={styles.searchInput}
+                      iconStyle={styles.iconStyle}
+                      data={CustomerOptions}
+                      search
+                      labelField="label"
+                      valueField="value"
+                      placeholder="Customer"
+                      searchPlaceholder="Customer"
+                      value={value}
+                      onBlur={onBlur}
+                      onChange={(item) => onChange(item.value)}
+                      placeholderStyle={styles.placeholderText}
+                    />
+                    {value && <Text style={styles.floatingLabel}>Customer</Text>}
+                  </View>
+                  {error && <HelperText type="error" style={styles.errorText}>{error.message}</HelperText>}
+                </>
+              )}
             />
-            {value && <Text style={styles.floatingLabel}>Visit Type</Text>}
-          </View>
-          {error && <HelperText type="error" style={styles.errorText}>{error.message}</HelperText>}
-        </>
-      )}
-    />
-    {/* Repeat similar blocks for City, Customer, etc. */}
-  </>
-)}
 
-{console.log(  visitType!=='Office' )}
+            <Controller
+              control={control}
+              name="ContactPerson"
+              rules={{ required: 'Contact Person is required' }}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <>
+                  <TextInput
+                    label="Contact Person"
+                    mode="outlined"
+                    onBlur={onBlur}
+                    onChangeText={onChange}
+                    value={value}
+                    style={styles.input}
+                    theme={styles.textInputTheme}
+                  />
+                  {errors.ContactPerson && (
+                    <HelperText type="error" style={styles.errorText}>
+                      {errors.ContactPerson.message}
+                    </HelperText>
+                  )}
+                </>
+              )}
+            />
 
-{workingStatus === 'Working ' &&  visitType === 'Outstation ' && 
-<Controller
-  control={control}
-  name="City" // Corrected field name
-  rules={{ required: 'City is required' }}
-  render={({ field: { onChange, value, onBlur }, fieldState: { error } }) => (
-    <>
-      <View style={[styles.input1, styles.dropdownContainer, value ? styles.focused : {}]}>
-      <Dropdown
-  style={styles.dropdown} // Apply consistent styling
-  selectedTextStyle={styles.selectedTextStyle}
-  inputSearchStyle={styles.inputSearchStyle}
-  iconStyle={styles.iconStyle}
-  data={cityOptions}
-  search
-  labelField="label"
-  valueField="value"
-  placeholder="City"
-  searchPlaceholder="City"
+            <Controller
+              control={control}
+              name="JobType"
+              rules={{ required: 'Job Type is required' }}
+              render={({ field: { onChange, value, onBlur }, fieldState: { error } }) => (
+                <>
+                  <View style={[styles.inputContainer, value ? styles.focusedInput : {}]}>
+                    <Dropdown
+                      style={styles.dropdown}
+                      selectedTextStyle={styles.inputText}
+                      inputSearchStyle={styles.searchInput}
+                      iconStyle={styles.iconStyle}
+                      data={Job_Type_Options}
+                      search
+                      labelField="label"
+                      valueField="value"
+                      placeholder="Job Type"
+                      searchPlaceholder="Job Type"
+                      value={value}
+                      onBlur={onBlur}
+                      onChange={(item) => onChange(item.value)}
+                      placeholderStyle={styles.placeholderText}
+                    />
+                    {value && <Text style={styles.floatingLabel}>Job Type</Text>}
+                  </View>
+                  {error && <HelperText type="error" style={styles.errorText}>{error.message}</HelperText>}
+                </>
+              )}
+            />
 
-  value={value}
-  onBlur={onBlur}
-  onChange={(item) => {
-    onChange(item.value); // This should set the value correctly
-    console.log(`Selected Expense Type: ${item.label}`); // Log selected type
-  }}
-/>
-        {value && <Text style={styles.floatingLabel}>City </Text>}
-      </View>
-      {error && <HelperText type="error" style={styles.errorText}>{error.message}</HelperText>}
-    </>
-  )}
-/>
-}
+            <Controller
+              control={control}
+              name="Instrument"
+              rules={{ required: 'Instrument is required' }}
+              render={({ field: { onChange, value, onBlur }, fieldState: { error } }) => (
+                <>
+                  <View style={[styles.inputContainer, value ? styles.focusedInput : {}]}>
+                    <Dropdown
+                      style={styles.dropdown}
+                      selectedTextStyle={styles.inputText}
+                      inputSearchStyle={styles.searchInput}
+                      iconStyle={styles.iconStyle}
+                      data={Instrument_Options}
+                      search
+                      labelField="label"
+                      valueField="value"
+                      placeholder="Instrument Model"
+                      searchPlaceholder="Instrument Model"
+                      value={value}
+                      onBlur={onBlur}
+                      onChange={(item) => onChange(item.value)}
+                      placeholderStyle={styles.placeholderText}
+                    />
+                    {value && <Text style={styles.floatingLabel}>Instrument Model</Text>}
+                  </View>
+                  {error && <HelperText type="error" style={styles.errorText}>{error.message}</HelperText>}
+                </>
+              )}
+            />
 
-{(workingStatus === 'Working ' && visitType!== 'WFH ' && visitType!=='Office')&& 
-<Controller
-  control={control}
-  name="Customer" // Corrected field name
-  rules={{ required: 'Customer  is required' }}
-  render={({ field: { onChange, value, onBlur }, fieldState: { error } }) => (
-    <>
-      <View style={[styles.input1, styles.dropdownContainer, value ? styles.focused : {}]}>
-      <Dropdown
-  style={styles.dropdown} // Apply consistent styling
-  selectedTextStyle={styles.selectedTextStyle}
-  inputSearchStyle={styles.inputSearchStyle}
-  iconStyle={styles.iconStyle}
-  data={CustomerOptions}
-  search
-  labelField="label"
-  valueField="value"
-  placeholder="Customer "
-  searchPlaceholder="Customer "
+            <Controller
+              control={control}
+              name="SerialNo"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  label="Serial No"
+                  mode="outlined"
+                  keyboardType="numeric"
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                  style={styles.input}
+                  theme={styles.textInputTheme}
+                />
+              )}
+            />
 
-  value={value}
-  onBlur={onBlur}
-  onChange={(item) => {
-    onChange(item.value); // This should set the value correctly
-    console.log(`Selected Expense Type: ${item.label}`); // Log selected type
-  }}
-/>
-        {value && <Text style={styles.floatingLabel}>Expense Type</Text>}
-      </View>
-      {error && <HelperText type="error" style={styles.errorText}>{error.message}</HelperText>}
-    </>
-  )}
-/>
-}
+            <Controller
+              control={control}
+              name="JobCode"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  label="Job Code"
+                  mode="outlined"
+                  keyboardType="numeric"
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                  style={styles.input}
+                  theme={styles.textInputTheme}
+                />
+              )}
+            />
 
-     {/* Amount Field */}
-{
-(workingStatus === 'Working ' && visitType!== 'WFH ' && visitType!=='Office') &&    
-     <Controller
-          control={control}
-          name="ContactPerson"
-          rules={{ required: 'Contact Person  is required' }}
-          render={({ field: { onChange, onBlur, value } }) => (
-            <>
-              <TextInput
-                label="Contact Person "
-                mode="outlined"
-                keyboardType="textfield"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-                style={styles.input}
-                theme={{ colors: { primary: '#6200ee' } }}
-              />
-              {errors.Amount && <HelperText type="error" style={styles.errorText}>{errors.Amount.message}</HelperText>}
-            </>
-          )}
-        />
-       
-}
+            <Controller
+              control={control}
+              name="AccompaniedBy"
+              rules={{ required: 'Accompanied by is required' }}
+              render={({ field: { onChange, value, onBlur }, fieldState: { error } }) => (
+                <>
+                  <View style={[styles.inputContainer, value ? styles.focusedInput : {}]}>
+                    <Dropdown
+                      style={styles.dropdown}
+                      selectedTextStyle={styles.inputText}
+                      inputSearchStyle={styles.searchInput}
+                      iconStyle={styles.iconStyle}
+                      data={Accompanied_by_Options}
+                      search
+                      labelField="label"
+                      valueField="value"
+                      placeholder="Accompanied by"
+                      searchPlaceholder="Accompanied by"
+                      value={value}
+                      onBlur={onBlur}
+                      onChange={(item) => onChange(item.value)}
+                      placeholderStyle={styles.placeholderText}
+                    />
+                    {value && <Text style={styles.floatingLabel}>Accompanied by</Text>}
+                  </View>
+                  {error && <HelperText type="error" style={styles.errorText}>{error.message}</HelperText>}
+                </>
+              )}
+            />
+          </>
+        )}
 
-{(workingStatus === 'Working ' && visitType!== 'WFH ' && visitType!=='Office') && 
-<Controller
-  control={control}
-  name="JobType"
-  rules={{ required: 'Job Type is required' }}
-  render={({ field: { onChange, value, onBlur }, fieldState: { error } }) => (
-    <>
-      <View style={[styles.input1, styles.dropdownContainer, value ? styles.focused : {}]}>
-        <Dropdown
-          style={styles.dropdown}
-          selectedTextStyle={styles.selectedTextStyle}
-          inputSearchStyle={styles.inputSearchStyle}
-          iconStyle={styles.iconStyle}
-          data={Job_Type_Options}
-          search
-  labelField="label"
-  valueField="value"
-  placeholder="Job Type "
-  searchPlaceholder="Job Type "
-
-  value={value}
-  onBlur={onBlur}
-  onChange={(item) => {
-    onChange(item.value); // This should set the value correctly
-    console.log(`Selected Expense Type: ${item.label}`); // Log selected type
-  }}
-/>
-        {value && <Text style={styles.floatingLabel}>Job Type</Text>}
-      </View>
-      {error && <HelperText type="error" style={styles.errorText}>{error.message}</HelperText>}
-    </>
-  )}
-/>
-}
-
-{
-(workingStatus === 'Working ' && visitType!== 'WFH ' && visitType!=='Office')&& 
-<Controller
-  control={control}
-  name="Instrument"
-  rules={{ required: 'Job Type is required' }}
-  render={({ field: { onChange, value, onBlur }, fieldState: { error } }) => (
-    <>
-      <View style={[styles.input1, styles.dropdownContainer, value ? styles.focused : {}]}>
-        <Dropdown
-          style={styles.dropdown}
-          selectedTextStyle={styles.selectedTextStyle}
-          inputSearchStyle={styles.inputSearchStyle}
-          iconStyle={styles.iconStyle}
-          data={Instrument_Options}
-          search
-  labelField="label"
-  valueField="value"
-  placeholder="Instrument Model "
-  searchPlaceholder="Instrument Model  "
-
-  value={value}
-  onBlur={onBlur}
-  onChange={(item) => {
-    onChange(item.value); // This should set the value correctly
-    console.log(`Selected Expense Type: ${item.label}`); // Log selected type
-  }}
-/>
-        {value && <Text style={styles.floatingLabel}>Instrument Model</Text>}
-      </View>
-      {error && <HelperText type="error" style={styles.errorText}>{error.message}</HelperText>}
-    </>
-  )}
-/>
-}
-
-{(workingStatus === 'Working ' && visitType!== 'WFH ' && visitType!=='Office') && 
-<Controller
-          control={control}
-          name="SerialNo"
-          render={({ field: { onChange, onBlur, value } }) => (
-            <>
-              <TextInput
-                label="Serial No "
-                mode="outlined"
-                keyboardType="numeric"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-                style={styles.input}
-                theme={{ colors: { primary: '#6200ee' } }}
-              />
-            </>
-          )}
-        />
-
-        }
-
-{(workingStatus === 'Working ' && visitType!== 'WFH ' && visitType!=='Office')&& 
-<Controller
-          control={control}
-          name="JobCode"
-          render={({ field: { onChange, onBlur, value } }) => (
-            <>
-              <TextInput
-                label="Job Code "
-                mode="outlined"
-                keyboardType="numeric"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-                style={styles.input}
-                theme={{ colors: { primary: '#6200ee' } }}
-              />
-            </>
-          )}
-        />
-        }
-
-        {(workingStatus === 'Working ' && visitType!== 'WFH ' && visitType!=='Office')&& 
-<Controller
-  control={control}
-  name="AccompaniedBy"
-  rules={{ required: 'Accompanied by is required' }}
-  render={({ field: { onChange, value, onBlur }, fieldState: { error } }) => (
-    <>
-      <View style={[styles.input1, styles.dropdownContainer, value ? styles.focused : {}]}>
-        <Dropdown
-          style={styles.dropdown}
-          selectedTextStyle={styles.selectedTextStyle}
-          inputSearchStyle={styles.inputSearchStyle}
-          iconStyle={styles.iconStyle}
-          data={Accompanied_by_Options}
-          search
-          labelField="label"
-          valueField="value"
-          placeholder="Accompanied by "
-          searchPlaceholder="Accompanied by "
-        
-          value={value}
-          onBlur={onBlur}
-          onChange={(item) => {
-            onChange(item.value); // This should set the value correctly
-            console.log(`Selected Expense Type: ${item.label}`); // Log selected type
-          }}
-        />
-        {value && <Text style={styles.floatingLabel}>Accompanied by</Text>}
-      </View>
-      {error && <HelperText type="error" style={styles.errorText}>{error.message}</HelperText>}
-    </>
-  )}
-/>
-
-}
-
-        {/* KM For Petrol Expenses Field */}
-        
-
-        
-        
-
-        {/* Details or Remarks Field */}
- 
         <Controller
           control={control}
           name="DetailsOfWorks"
           render={({ field: { onChange, onBlur, value } }) => (
-            <>
-              <TextInput
-                label="Details / Remarks"
-                mode="outlined"
-                multiline
-                numberOfLines={4}
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-                style={styles.input}
-                theme={{ colors: { primary: '#6200ee' } }}
-              />
-            </>
+            <TextInput
+              label="Details / Remarks"
+              mode="outlined"
+              multiline
+              numberOfLines={4}
+              onBlur={onBlur}
+              onChangeText={onChange}
+              value={value}
+              style={styles.input}
+              theme={styles.textInputTheme}
+            />
           )}
         />
-  
 
-        {/* Submit Button */}
-        <Button mode="contained" onPress={handleSubmit(onSubmit)} style={styles.button}>
+        <Button 
+          mode="contained" 
+          onPress={handleSubmit(onSubmit)} 
+          style={styles.button}
+          buttonColor="#3498DB"
+        >
           Submit
         </Button>
 
-        {/* Contact Button */}
-        <Button mode="outlined" onPress={handleSubmit(handleAddAnotherExpense)} style={styles.button}>
+        <Button 
+          mode="outlined" 
+          onPress={handleSubmit(handleAddAnotherExpense)} 
+          style={styles.button}
+          textColor="#3498DB"
+        >
           Add Another Expense
         </Button>
-        
       </View>
+
       <View style={styles.contactContainer}>
-  <Text style={styles.contactText}>
-    If you have any issues or need further assistance, please contact us at 
-    <Text style={styles.contactEmail}> a.shubham@zefsci.com</Text>
-  </Text>
-</View>
-<View style={styles.socialIconsContainer}>
-  <FontAwesome
-    name="facebook"
-    size={24}
-    color="Gray"
-    style={styles.icon}
-  />
-  <FontAwesome
-    name="twitter"
-    size={24}
-    color="Gray"
-    style={styles.icon}
-  />
-  <FontAwesome
-    name="linkedin"
-    size={24}
-    color="Black"
-    style={styles.icon}
-  />
-  <FontAwesome
-    name="instagram"
-    size={24}
-    color="Black"
-    style={styles.icon}
-  />
-</View>
+        <Text style={styles.contactText}>
+          If you have any issues or need further assistance, please contact us at
+          <Text style={styles.contactEmail}> a.shubham@zefsci.com</Text>
+        </Text>
+      </View>
 
-
+      <View style={styles.socialIconsContainer}>
+        <FontAwesome name="facebook" size={24} color="#3498DB" style={styles.icon} />
+        <FontAwesome name="twitter" size={24} color="#3498DB" style={styles.icon} />
+        <FontAwesome name="linkedin" size={24} color="#3498DB" style={styles.icon} />
+        <FontAwesome name="instagram" size={24} color="#3498DB" style={styles.icon} />
+      </View>
     </ScrollView>
   );
 };
@@ -648,7 +586,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#0F1B2C',
   },
   header: {
     alignItems: 'center',
@@ -657,80 +595,99 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: 'bold',
+    color: '#ECF0F1',
   },
   dateContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 10,
-    marginBottom:-2,
+    marginBottom: -2,
   },
   dateText: {
     marginHorizontal: 10,
     fontSize: 18,
+    color: '#ECF0F1',
   },
   form: {
     marginBottom: 20,
   },
-  input:{
-    marginBottom: 12,
-  },
-  input1: {
-    marginBottom: 12,
-    backgroundColor: 'rgba(200, 160, 190, 0.04)',
- 
-  },
-  dropdownContainer: {
-    position: 'relative', // To handle the floating label positioning
-    borderColor: '#6200ee',
-    color: 'white',
+  // Input container for both Dropdown and TextInput
+  inputContainer: {
+    position: 'relative',
+    borderColor: '#3498DB',
     borderWidth: 1,
     borderRadius: 4,
     padding: 8,
+    marginBottom: 12,
+    backgroundColor: '#172435',
+    
   },
+  // Style for focused state of inputs
+  focusedInput: {
+    marginTop: 10,
+    borderColor: '#3498DB',
+    borderWidth: 2,
+  },
+  // Text styling for input values
+  inputText: {
+    fontSize: 16,
+    color: '#ECF0F1',
+  },
+  // Placeholder text styling
+  placeholderText: {
+    color: '#7F8C8D',
+  },
+  // Search input styling for dropdowns
+  searchInput: {
+    height: 40,
+    fontSize: 16,
+    color: '#ECF0F1',
+    backgroundColor: '#172435',
+  },
+  // Dropdown specific styling
   dropdown: {
     paddingHorizontal: 8,
     paddingVertical: 6,
+    backgroundColor: '#172435',
   },
+  // Floating label styling
   floatingLabel: {
     position: 'absolute',
     left: 8,
     top: -10,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#0F1B2C',
     paddingHorizontal: 4,
     fontSize: 14,
-    fontWeight:'400',
-    color: '#6200ee',
-    
+    fontWeight: '400',
+    color: '#3498DB',
   },
-  selectedTextStyle: {
-    fontSize: 16,
-    color: '#000',
+  // TextInput specific styling
+  input: {
+    marginBottom: 12,
+    backgroundColor: '#172435',
+    borderColor: 'transparent',
+    color: '#ECF0F1',
   },
-  inputSearchStyle: {
-    height: 40,
-    fontSize: 16,
+  // Error text styling
+  errorText: {
+    fontSize: 12,
+    marginTop: -8,
+    marginBottom: 4,
+    color: '#E74C3C',
   },
+  // Icon styling
   iconStyle: {
     width: 20,
     height: 20,
   },
-  errorText: {
-    fontSize: 12,
-    top:-12,
-    color: 'red',
+  // Button styling
+  button: {
+    marginVertical: 14,
   },
-  submitButton: {
-    marginTop: 16,
-    padding: 10,
-  },
-  focused: {
-    marginTop:10,
-    borderColor: '#6200ee', 
-  },
+  // Contact section styling
   contactContainer: {
-    marginTop:3,
-    
+    marginTop: 3,
     paddingHorizontal: 16,
     justifyContent: 'center',
     alignItems: 'center',
@@ -738,25 +695,34 @@ const styles = StyleSheet.create({
   contactText: {
     fontSize: 14,
     textAlign: 'center',
+    color: '#ECF0F1',
   },
   contactEmail: {
-    color: '#6200ee',
+    color: '#3498DB',
     fontWeight: 'bold',
     fontSize: 15,
   },
+  // Social icons styling
   socialIconsContainer: {
     flexDirection: 'row',
-    justifyContent: 'center', 
+    justifyContent: 'center',
     alignItems: 'center',
-    marginTop:6,
+    marginTop: 6,
     marginBottom: 20,
   },
   icon: {
-    marginHorizontal: 10, 
+    marginHorizontal: 10,
   },
-  button: {
-    marginVertical: 14,
-    
+  // Theme configuration for TextInput components
+  textInputTheme: {
+    colors: {
+      primary: '#3498DB',      // Primary color for focus state
+      text: '#ECF0F1',         // Text color
+      placeholder: '#7F8C8D',   // Placeholder text color
+      background: '#172435',    // Background color
+      surface: '#172435',       // Surface color
+      outlineVariant: '#3498DB' // Border color
+    },
   },
 });
 

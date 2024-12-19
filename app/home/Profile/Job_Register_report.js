@@ -213,6 +213,10 @@ const Job_Register_Report= () => {
   );
 };
 
+
+
+
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
