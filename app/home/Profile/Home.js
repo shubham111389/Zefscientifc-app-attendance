@@ -148,7 +148,7 @@ const Home = () => {
             </Pressable>
           </View>
 
-          {(userdata?.Profession === 'Manager1' || userDetails?.Profession === 'Manager1') && (
+          {(userdata?.Profession === 'Manager' || userDetails?.Profession === 'Manager') && (
             <View style={styles.managerSection}>
               <Pressable 
                 onPress={() => router.push("/home/Profile/Team_data/Teams")}

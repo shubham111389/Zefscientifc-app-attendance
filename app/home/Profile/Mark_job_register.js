@@ -30,6 +30,8 @@ const JobRegisterReport = () => {
   const [EmployeeName,setEmployeeName]=useState('name'); 
   const [workingStatus, setWorkingStatus] = useState('Working ');
   const [ visitType,setVisitType]=useState('office');
+  const [Employee_Code,setEmployee_Code]=useState('00'); 
+
   // State to store AsyncStorage dataconst
 
   const getUserData = async () => {
@@ -55,11 +57,13 @@ const JobRegisterReport = () => {
   useEffect(() => {
     if (userData) {
       setIsLoading(false);
-      setEmployeeName(`${userData.firstName} ${userData.lastName}`); // Concatenate first and last names
+      setEmployeeName(`${userData.firstName} ${userData.lastName}`);
+      setEmployee_Code(userData.Employee_Code) // Concatenate first and last names
     }
   }, [userData]); // Trigger when userData is updated
   
   console.log("Employee Name:", EmployeeName);
+  console.log("Employee Name:", Employee_Code);
 
  
   const onSubmit = async (data) => {
@@ -78,9 +82,12 @@ const JobRegisterReport = () => {
     formDatab.append('SerialNo', data.SerialNo);
     formDatab.append('JobCode', data.JobCode);
     formDatab.append('AccompaniedBy', data.AccompaniedBy);
+   
+    formDatab.append('DetailsOfWorks', data.DetailsOfWorks  );
+    formDatab.append('Employee_Code',Employee_Code);
+    {console.log( Employee_Code)};
     
 
-    formDatab.append('DetailsOfWorks', data.DetailsOfWorks  );
 
 
     console.log("Submitted Form Data: ", formDatab);

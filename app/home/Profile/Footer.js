@@ -12,10 +12,10 @@ const Footer = () => {
         </Text>
       </View>
       <View style={styles.socialIconsContainer}>
-        <FontAwesome name="facebook" size={24} color="Gray" style={styles.icon} />
-        <FontAwesome name="twitter" size={24} color="Gray" style={styles.icon} />
-        <FontAwesome name="linkedin" size={24} color="Black" style={styles.icon} />
-        <FontAwesome name="instagram" size={24} color="Black" style={styles.icon} />
+        <FontAwesome name="facebook" size={24} color="#3498db" style={styles.icon} />
+        <FontAwesome name="twitter" size={24} color="#3498db" style={styles.icon} />
+        <FontAwesome name="linkedin" size={24} color="#3498db" style={styles.icon} />
+        <FontAwesome name="instagram" size={24} color="#3498db" style={styles.icon} />
       </View>
     </View>
   );
@@ -25,10 +25,10 @@ const styles = StyleSheet.create({
   footerContainer: {
     paddingVertical: 11,
     borderTopWidth: 1,
-    borderColor: '#E6E6E6',
-    marginTop:10,
-    marginBottom:3,
-    // Match the main container's background
+    borderColor: '#333333', // Darker border color
+    marginTop: 10,
+    marginBottom: 3,
+    backgroundColor: '#121212', // Dark background to match main container
   },
   contactContainer: {
     paddingHorizontal: 16,
@@ -38,9 +38,10 @@ const styles = StyleSheet.create({
   contactText: {
     fontSize: 14,
     textAlign: 'center',
+    color: '#ffffff', // White text for dark theme
   },
   contactEmail: {
-    color: '#6200ee',
+    color: '#3498db', // Light blue to match the theme
     fontWeight: 'bold',
     fontSize: 15,
   },
@@ -49,7 +50,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 6,
-    marginBottom:10,
+    marginBottom: 10,
   },
   icon: {
     marginHorizontal: 10,

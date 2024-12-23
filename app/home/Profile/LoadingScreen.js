@@ -34,9 +34,30 @@ const LoadingScreen = () => {
   return (
     <View style={styles.container}>
       <View style={styles.dotsContainer}>
-        <Animated.View style={[styles.dot, { transform: [{ translateY: dot1 }] }]} />
-        <Animated.View style={[styles.dot, { transform: [{ translateY: dot2 }] }]} />
-        <Animated.View style={[styles.dot, { transform: [{ translateY: dot3 }] }]} />
+        <Animated.View
+          style={[
+            styles.dot,
+            {
+              transform: [{ translateY: dot1 }],
+            },
+          ]}
+        />
+        <Animated.View
+          style={[
+            styles.dot,
+            {
+              transform: [{ translateY: dot2 }],
+            },
+          ]}
+        />
+        <Animated.View
+          style={[
+            styles.dot,
+            {
+              transform: [{ translateY: dot3 }],
+            },
+          ]}
+        />
       </View>
       <Text style={styles.loadingText}>Loading...</Text>
     </View>
@@ -48,7 +69,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: '#121212', // Dark theme background
   },
   dotsContainer: {
     flexDirection: 'row',
@@ -60,10 +81,19 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     backgroundColor: '#3498db',
     marginHorizontal: 5,
+    shadowColor: '#3498db',
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 3, // For Android shadow
   },
   loadingText: {
     fontSize: 16,
-    color: '#000',
+    color: '#ffffff', // White text for dark theme
+    fontWeight: '500',
   },
 });
 

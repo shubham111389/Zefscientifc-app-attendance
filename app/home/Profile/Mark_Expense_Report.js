@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, ScrollView, TouchableOpacity, Text,Alert } from 'react-native';
+import { StyleSheet, View, ScrollView, TouchableOpacity, Text, Alert } from 'react-native';
 import { TextInput, Button, Title, HelperText } from 'react-native-paper';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
-import {  AntDesign,  FontAwesome,  } from "@expo/vector-icons";
+import { AntDesign, FontAwesome } from "@expo/vector-icons";
 import { useForm, Controller } from 'react-hook-form';
-import {API_URL_FOR_EXPENSE_POST} from "@env"
+import { API_URL_FOR_EXPENSE_POST } from "@env"
 import { Dropdown } from 'react-native-element-dropdown';
 import useDropdownData from '../../../Hooks/useDropdownData';
 import LoadingScreen from './LoadingScreen';
@@ -194,17 +194,18 @@ const BillSubmittedOptions = isDropdown.Bill_submitted.map((type) => ({
     return date.toDateString();
   };
 
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
         <Title style={styles.title}>𝙴𝚇𝙿𝙴𝙽𝚂𝙴 𝚁𝙴𝙿𝙾𝚁𝚃 𝚂𝚄𝙱𝙼𝙸𝚂𝚂𝙸𝙾𝙽</Title>
 
         <View style={styles.dateContainer}>
-          <AntDesign onPress={goToPrevDay} name="left" size={24} color="#6200ee" />
+          <AntDesign onPress={goToPrevDay} name="left" size={24} color="#3498DB" />
           <TouchableOpacity onPress={showDatePicker}>
             <Text style={styles.dateText}>{formatDate(date)}</Text>
           </TouchableOpacity>
-          <AntDesign onPress={goToNextDay} name="right" size={24} color="#6200ee" />
+          <AntDesign onPress={goToNextDay} name="right" size={24} color="#3498DB" />
         </View>
       </View>
 
@@ -215,109 +216,99 @@ const BillSubmittedOptions = isDropdown.Bill_submitted.map((type) => ({
         onCancel={hideDatePicker}
       />
 
-      <View style={styles.form}>
-      <Controller
-  control={control}
-  name="Category"
-  rules={{ required: 'Category is required' }}
-  render={({ field: { onChange, value, onBlur }, fieldState: { error } }) => (
-    <>
-      <View style={[styles.input1, styles.dropdownContainer, value ? styles.focused : {}]}>
-        <Dropdown
-          style={styles.dropdown} // Apply consistent styling
-          selectedTextStyle={styles.selectedTextStyle}
-          inputSearchStyle={styles.inputSearchStyle}
-          iconStyle={styles.iconStyle}
-          data={categoryOptions}
-          search
-          maxHeight={300}
-          labelField="label"
-          valueField="value"
-          placeholder={value ? '' : 'Category'} // Float placeholder when value exists
-          searchPlaceholder="Category"
-          value={value}
-          onBlur={onBlur}
-          onChange={(item) => {
-            onChange(item.value);
-            console.log(`Selected Item: ${item.label}`);
-          }}
+<View style={styles.form}>
+        <Controller
+          control={control}
+          name="Category"
+          rules={{ required: 'Category is required' }}
+          render={({ field: { onChange, value, onBlur }, fieldState: { error } }) => (
+            <>
+              <View style={[styles.inputContainer, value ? styles.focusedInput : {}]}>
+                <Dropdown
+                  style={styles.dropdown}
+                  selectedTextStyle={styles.inputText}
+                  inputSearchStyle={styles.searchInput}
+                  iconStyle={styles.iconStyle}
+                  data={categoryOptions}
+                  search
+                  maxHeight={300}
+                  labelField="label"
+                  valueField="value"
+                  placeholder={value ? '' : 'Category'}
+                  searchPlaceholder="Category"
+                  value={value}
+                  onBlur={onBlur}
+                  onChange={(item) => onChange(item.value)}
+                  placeholderStyle={styles.placeholderText}
+                />
+                {value && <Text style={styles.floatingLabel}>Category</Text>}
+              </View>
+              {error && <HelperText type="error" style={styles.errorText}>{error.message}</HelperText>}
+            </>
+          )}
         />
-        {/* Floating label effect */}
-        {value && <Text style={styles.floatingLabel}>Category</Text>}
-      </View>
-      {error && <HelperText type="error" style={styles.errorText}>{error.message}</HelperText>}
-    </>
-  )}
-/>
-<Controller
-  control={control}
-  name="City" // Corrected field name
-  rules={{ required: 'City is required' }}
-  render={({ field: { onChange, value, onBlur }, fieldState: { error } }) => (
-    <>
-      <View style={[styles.input1, styles.dropdownContainer, value ? styles.focused : {}]}>
-      <Dropdown
-   style={styles.dropdown} // Apply consistent styling
-   selectedTextStyle={styles.selectedTextStyle}
-   inputSearchStyle={styles.inputSearchStyle}
-   iconStyle={styles.iconStyle}
-   data={cityOptions}
-   search
-  labelField="label"
-  valueField="value"
-  placeholder="City"
-  searchPlaceholder="City"
-  value={value}
-  onBlur={onBlur}
-  onChange={(item) => {
-    onChange(item.value); // This should set the value correctly
-    console.log(`Selected City: ${item.label}`); // Log selected city
-  }}
-/>
 
-        {value && <Text style={styles.floatingLabel}>City</Text>}
-      </View>
-      {error && <HelperText type="error" style={styles.errorText}>{error.message}</HelperText>}
-    </>
-  )}
-/>
+        <Controller
+          control={control}
+          name="City"
+          rules={{ required: 'City is required' }}
+          render={({ field: { onChange, value, onBlur }, fieldState: { error } }) => (
+            <>
+              <View style={[styles.inputContainer, value ? styles.focusedInput : {}]}>
+                <Dropdown
+                  style={styles.dropdown}
+                  selectedTextStyle={styles.inputText}
+                  inputSearchStyle={styles.searchInput}
+                  iconStyle={styles.iconStyle}
+                  data={cityOptions}
+                  search
+                  labelField="label"
+                  valueField="value"
+                  placeholder={value ? '' : 'City'}
+                  searchPlaceholder="City"
+                  value={value}
+                  onBlur={onBlur}
+                  onChange={(item) => onChange(item.value)}
+                  placeholderStyle={styles.placeholderText}
+                />
+                {value && <Text style={styles.floatingLabel}>City</Text>}
+              </View>
+              {error && <HelperText type="error" style={styles.errorText}>{error.message}</HelperText>}
+            </>
+          )}
+        />
 
-<Controller
-  control={control}
-  name="ExpenseType" // Corrected field name
-  rules={{ required: 'Expense Type is required' }}
-  render={({ field: { onChange, value, onBlur }, fieldState: { error } }) => (
-    <>
-      <View style={[styles.input1, styles.dropdownContainer, value ? styles.focused : {}]}>
-      <Dropdown
-  style={styles.dropdown} // Apply consistent styling
-  selectedTextStyle={styles.selectedTextStyle}
-  inputSearchStyle={styles.inputSearchStyle}
-  iconStyle={styles.iconStyle}
-  data={expenseTypeOptions}
-  search
-  labelField="label"
-  valueField="value"
-  placeholder="Expense Type"
-  searchPlaceholder="Expense Type"
+        <Controller
+          control={control}
+          name="ExpenseType"
+          rules={{ required: 'Expense Type is required' }}
+          render={({ field: { onChange, value, onBlur }, fieldState: { error } }) => (
+            <>
+              <View style={[styles.inputContainer, value ? styles.focusedInput : {}]}>
+                <Dropdown
+                  style={styles.dropdown}
+                  selectedTextStyle={styles.inputText}
+                  inputSearchStyle={styles.searchInput}
+                  iconStyle={styles.iconStyle}
+                  data={expenseTypeOptions}
+                  search
+                  labelField="label"
+                  valueField="value"
+                  placeholder={value ? '' : 'Expense Type'}
+                  searchPlaceholder="Expense Type"
+                  value={value}
+                  onBlur={onBlur}
+                  onChange={(item) => onChange(item.value)}
+                  placeholderStyle={styles.placeholderText}
+                />
+                {value && <Text style={styles.floatingLabel}>Expense Type</Text>}
+              </View>
+              {error && <HelperText type="error" style={styles.errorText}>{error.message}</HelperText>}
+            </>
+          )}
+        />
 
-  value={value}
-  onBlur={onBlur}
-  onChange={(item) => {
-    onChange(item.value); // This should set the value correctly
-    console.log(`Selected Expense Type: ${item.label}`); // Log selected type
-  }}
-/>
-        {value && <Text style={styles.floatingLabel}>Expense Type</Text>}
-      </View>
-      {error && <HelperText type="error" style={styles.errorText}>{error.message}</HelperText>}
-    </>
-  )}
-/>
-
-
-     {/* Amount Field */}
-     <Controller
+        <Controller
           control={control}
           name="Amount"
           rules={{ required: 'Amount is required' }}
@@ -331,14 +322,13 @@ const BillSubmittedOptions = isDropdown.Bill_submitted.map((type) => ({
                 onChangeText={onChange}
                 value={value}
                 style={styles.input}
-                theme={{ colors: { primary: '#6200ee' } }}
+                theme={styles.textInputTheme}
               />
               {errors.Amount && <HelperText type="error" style={styles.errorText}>{errors.Amount.message}</HelperText>}
             </>
           )}
         />
 
-        {/* Description Field */}
         <Controller
           control={control}
           name="Description"
@@ -352,147 +342,125 @@ const BillSubmittedOptions = isDropdown.Bill_submitted.map((type) => ({
                 onChangeText={onChange}
                 value={value}
                 style={styles.input}
-                theme={{ colors: { primary: '#6200ee' } }}
+                theme={styles.textInputTheme}
               />
               {errors.Description && <HelperText type="error" style={styles.errorText}>{errors.Description.message}</HelperText>}
             </>
           )}
         />
 
-<Controller
-  control={control}
-  name="BillSubmitted"
-  rules={{ required: 'Bill Submitted status is required' }}
-  render={({ field: { onChange, value, onBlur }, fieldState: { error } }) => (
-    <>
-      <View style={[styles.input1, styles.dropdownContainer, value ? styles.focused : {}]}>
-        <Dropdown
-          style={styles.dropdown}
-          selectedTextStyle={styles.selectedTextStyle}
-          inputSearchStyle={styles.inputSearchStyle}
-          iconStyle={styles.iconStyle}
-          data={BillSubmittedOptions}
-          maxHeight={300}
-          labelField="label"
-          valueField="value"
-          placeholder={value ? '' : 'Bill Submitted'} // Correct placeholder
-          value={value}
-          onBlur={onBlur}
-          onChange={(item) => {
-            onChange(item.value);
-          }}
+        <Controller
+          control={control}
+          name="BillSubmitted"
+          rules={{ required: 'Bill Submitted status is required' }}
+          render={({ field: { onChange, value, onBlur }, fieldState: { error } }) => (
+            <>
+              <View style={[styles.inputContainer, value ? styles.focusedInput : {}]}>
+                <Dropdown
+                  style={styles.dropdown}
+                  selectedTextStyle={styles.inputText}
+                  inputSearchStyle={styles.searchInput}
+                  iconStyle={styles.iconStyle}
+                  data={BillSubmittedOptions}
+                  maxHeight={300}
+                  labelField="label"
+                  valueField="value"
+                  placeholder={value ? '' : 'Bill Submitted'}
+                  value={value}
+                  onBlur={onBlur}
+                  onChange={(item) => onChange(item.value)}
+                  placeholderStyle={styles.placeholderText}
+                />
+                {value && <Text style={styles.floatingLabel}>Bill Submitted</Text>}
+              </View>
+              {error && <HelperText type="error" style={styles.errorText}>{error.message}</HelperText>}
+            </>
+          )}
         />
-        {value && <Text style={styles.floatingLabel}>Bill Submitted</Text>}
-      </View>
-      {error && <HelperText type="error" style={styles.errorText}>{error.message}</HelperText>}
-    </>
-  )}
-/>
-        {/* KM For Petrol Expenses Field */}
+
         <Controller
           control={control}
           name="KMForPetrolExpenses"
           render={({ field: { onChange, onBlur, value } }) => (
-            <>
-              <TextInput
-                label="KM For Petrol Expenses"
-                mode="outlined"
-                keyboardType="numeric"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-                style={styles.input}
-                theme={{ colors: { primary: '#6200ee' } }}
-              />
-            </>
+            <TextInput
+              label="KM For Petrol Expenses"
+              mode="outlined"
+              keyboardType="numeric"
+              onBlur={onBlur}
+              onChangeText={onChange}
+              value={value}
+              style={styles.input}
+              theme={styles.textInputTheme}
+            />
           )}
         />
 
-        {/* Reference For KM Calculation Field */}
         <Controller
           control={control}
           name="ReferenceForKMCalculation"
           render={({ field: { onChange, onBlur, value } }) => (
-            <>
-              <TextInput
-                label="Reference for KM Calculation"
-                mode="outlined"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-                style={styles.input}
-                theme={{ colors: { primary: '#6200ee' } }}
-              />
-            </>
+            <TextInput
+              label="Reference for KM Calculation"
+              mode="outlined"
+              onBlur={onBlur}
+              onChangeText={onChange}
+              value={value}
+              style={styles.input}
+              theme={styles.textInputTheme}
+            />
           )}
         />
 
-        {/* Details or Remarks Field */}
         <Controller
           control={control}
           name="DetailsOrRemarks"
           render={({ field: { onChange, onBlur, value } }) => (
-            <>
-              <TextInput
-                label="Details / Remarks"
-                mode="outlined"
-                multiline
-                numberOfLines={4}
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-                style={styles.input}
-                theme={{ colors: { primary: '#6200ee' } }}
-              />
-            </>
+            <TextInput
+              label="Details / Remarks"
+              mode="outlined"
+              multiline
+              numberOfLines={4}
+              onBlur={onBlur}
+              onChangeText={onChange}
+              value={value}
+              style={styles.input}
+              theme={styles.textInputTheme}
+            />
           )}
         />
 
-        {/* Submit Button */}
-        <Button mode="contained" onPress={handleSubmit(onSubmit)} style={styles.button}>
+        <Button 
+          mode="contained" 
+          onPress={handleSubmit(onSubmit)} 
+          style={styles.button}
+          buttonColor="#3498DB"
+        >
           Submit
         </Button>
 
-        {/* Contact Button */}
-        <Button mode="outlined" onPress={handleSubmit(handleAddAnotherExpense)} style={styles.button}>
+        <Button 
+          mode="outlined" 
+          onPress={handleSubmit(handleAddAnotherExpense)} 
+          style={styles.button}
+          textColor="#3498DB"
+        >
           Add Another Expense
         </Button>
-        
       </View>
+
       <View style={styles.contactContainer}>
-  <Text style={styles.contactText}>
-    If you have any issues or need further assistance, please contact us at 
-    <Text style={styles.contactEmail}> a.shubham@zefsci.com</Text>
-  </Text>
-</View>
-<View style={styles.socialIconsContainer}>
-  <FontAwesome
-    name="facebook"
-    size={24}
-    color="Gray"
-    style={styles.icon}
-  />
-  <FontAwesome
-    name="twitter"
-    size={24}
-    color="Gray"
-    style={styles.icon}
-  />
-  <FontAwesome
-    name="linkedin"
-    size={24}
-    color="Black"
-    style={styles.icon}
-  />
-  <FontAwesome
-    name="instagram"
-    size={24}
-    color="Black"
-    style={styles.icon}
-  />
-</View>
+        <Text style={styles.contactText}>
+          If you have any issues or need further assistance, please contact us at
+          <Text style={styles.contactEmail}> a.shubham@zefsci.com</Text>
+        </Text>
+      </View>
 
-
+      <View style={styles.socialIconsContainer}>
+        <FontAwesome name="facebook" size={24} color="#3498DB" style={styles.icon} />
+        <FontAwesome name="twitter" size={24} color="#3498DB" style={styles.icon} />
+        <FontAwesome name="linkedin" size={24} color="#3498DB" style={styles.icon} />
+        <FontAwesome name="instagram" size={24} color="#3498DB" style={styles.icon} />
+      </View>
     </ScrollView>
   );
 };
@@ -501,89 +469,95 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#0F1B2C',
   },
   header: {
     alignItems: 'center',
     marginBottom: 20,
   },
   title: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
+    color: '#ECF0F1',
   },
   dateContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 10,
-    marginBottom:-2,
+    marginBottom: -2,
   },
   dateText: {
     marginHorizontal: 10,
     fontSize: 18,
+    color: '#ECF0F1',
   },
   form: {
     marginBottom: 20,
   },
-  input:{
-    marginBottom: 12,
-  },
-  input1: {
-    marginBottom: 12,
-    backgroundColor: 'rgba(200, 160, 190, 0.04)',
- 
-  },
-  dropdownContainer: {
-    position: 'relative', // To handle the floating label positioning
-    borderColor: '#6200ee',
-    color: 'white',
+  inputContainer: {
+    position: 'relative',
+    borderColor: '#3498DB',
     borderWidth: 1,
     borderRadius: 4,
     padding: 8,
+    marginBottom: 12,
+    backgroundColor: '#172435',
+  },
+  focusedInput: {
+    marginTop: 10,
+    borderColor: '#3498DB',
+    borderWidth: 2,
+  },
+  inputText: {
+    fontSize: 16,
+    color: '#ECF0F1',
+  },
+  placeholderText: {
+    color: '#7F8C8D',
+  },
+  searchInput: {
+    height: 40,
+    fontSize: 16,
+    color: '#ECF0F1',
+    backgroundColor: '#172435',
   },
   dropdown: {
     paddingHorizontal: 8,
     paddingVertical: 6,
+    backgroundColor: '#172435',
   },
   floatingLabel: {
     position: 'absolute',
     left: 8,
     top: -10,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#0F1B2C',
     paddingHorizontal: 4,
     fontSize: 14,
-    fontWeight:'400',
-    color: '#6200ee',
-    
+    fontWeight: '400',
+    color: '#3498DB',
   },
-  selectedTextStyle: {
-    fontSize: 16,
-    color: '#000',
+  input: {
+    marginBottom: 12,
+    backgroundColor: '#172435',
+    borderColor: 'transparent',
+    color: '#7F8C8D',
   },
-  inputSearchStyle: {
-    height: 40,
-    fontSize: 16,
+  errorText: {
+    fontSize: 12,
+    marginTop: -8,
+    marginBottom: 4,
+    color: '#E74C3C',
   },
   iconStyle: {
     width: 20,
     height: 20,
   },
-  errorText: {
-    fontSize: 12,
-    color: 'red',
-    marginTop:-14,
-  },
-  submitButton: {
-    marginTop: 16,
-    padding: 10,
-  },
-  focused: {
-    marginTop:10,
-    borderColor: '#6200ee', 
+  button: {
+    marginVertical: 14,
   },
   contactContainer: {
-    marginTop:3,
-    
+    marginTop: 3,
     paddingHorizontal: 16,
     justifyContent: 'center',
     alignItems: 'center',
@@ -591,25 +565,32 @@ const styles = StyleSheet.create({
   contactText: {
     fontSize: 14,
     textAlign: 'center',
+    color: '#ECF0F1',
   },
   contactEmail: {
-    color: '#6200ee',
+    color: '#3498DB',
     fontWeight: 'bold',
     fontSize: 15,
   },
   socialIconsContainer: {
     flexDirection: 'row',
-    justifyContent: 'center', 
+    justifyContent: 'center',
     alignItems: 'center',
-    marginTop:6,
+    marginTop: 6,
     marginBottom: 20,
   },
   icon: {
-    marginHorizontal: 10, 
+    marginHorizontal: 10,
   },
-  button: {
-    marginVertical: 14,
-    
+  textInputTheme: {
+    colors: {
+      primary: '#3498DB',
+      text: '#ECF0F1',
+      placeholder: '#7F8C8D',
+      background: '#172435',
+      surface: '#172435',
+      outlineVariant: '#3498DB'
+    },
   },
 });
 

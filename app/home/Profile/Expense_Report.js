@@ -2,13 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, ScrollView, TouchableOpacity, Text, PanResponder } from 'react-native';
 import { Title } from 'react-native-paper';
 import { AntDesign } from '@expo/vector-icons';
-import { API_URL_FOR_EXPENSE_POST } from '@env'; // Ensure you have this in your .env file
+import { API_URL_FOR_EXPENSE_POST } from '@env';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import LoadingScreen from './LoadingScreen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Footer from './Footer';
 
-// Helper function to format date
 const formatDate = (date) => {
   const options = { year: 'numeric', month: 'long', day: 'numeric' };
   return date.toLocaleDateString(undefined, options);
@@ -35,15 +34,12 @@ const ExpenseReport = () => {
     }
   };
 
-  // Fetch user data on component mount
   useEffect(() => {
     getUserData();
   }, []);
 
-  // Set EmployeeName after userData is updated
   useEffect(() => {
     if (userData) {
-      console.log( userData);
       setEmployeeName(`${userData.firstName} ${userData.lastName}`);
     }
   }, [userData]);
@@ -58,7 +54,6 @@ const ExpenseReport = () => {
         }
         const result = await response.json();
         setAllExpenseData(result.data);
-        console.log( result);
       } catch (error) {
         console.error('Error fetching data:', error);
         setError('Failed to fetch data');
@@ -95,35 +90,24 @@ const ExpenseReport = () => {
     setDate(nextDay);
   };
 
-  useEffect(() => { 
+  useEffect(() => {
     const formattedSelectedDate = formatDate(date);
-    
-
     const filtered = allExpenseData.filter((expense) => {
-      console.log( expense);
-        const expenseDate = formatDate(new Date(expense.DateAndDay));
-        const dateMatch = expenseDate === formattedSelectedDate;
-        const nameMatch = expense.EmployeeName.trim().toLowerCase() === employeeName.trim().toLowerCase();
-
-        console.log(`Expense Date: ${expenseDate}, Selected Date: ${formattedSelectedDate}, Are Dates Equal: ${dateMatch}`);
-        console.log(`Expense EmployeeName: ${expense}, Filter EmployeeName: ${employeeName}, Are Names Equal: ${nameMatch}`);
-        
-        return dateMatch && nameMatch;
+      const expenseDate = formatDate(new Date(expense.Date));
+      const dateMatch = expenseDate === formattedSelectedDate;
+      const nameMatch = expense.EmployeeName.trim().toLowerCase() === employeeName.trim().toLowerCase();
+      return dateMatch && nameMatch;
     });
-
     setFilteredData(filtered);
-    console.log("Filtered Data: ", filtered);
-}, [date, allExpenseData, employeeName]);
+  }, [date, allExpenseData, employeeName]);
 
-
-  // PanResponder to detect swipe gestures
   const panResponder = PanResponder.create({
-    onMoveShouldSetPanResponder: (evt, gestureState) => Math.abs(gestureState.dx) > 20, // Detect swipe with horizontal movement
+    onMoveShouldSetPanResponder: (evt, gestureState) => Math.abs(gestureState.dx) > 20,
     onPanResponderRelease: (evt, gestureState) => {
       if (gestureState.dx > 0) {
-        goToPrevDay(); // Swiped right, go to the previous day
+        goToPrevDay();
       } else if (gestureState.dx < 0) {
-        goToNextDay(); // Swiped left, go to the next day
+        goToNextDay();
       }
     },
   });
@@ -143,19 +127,19 @@ const ExpenseReport = () => {
   return (
     <ScrollView
       style={styles.container}
-      {...panResponder.panHandlers} // Attach the PanResponder to the ScrollView
+      {...panResponder.panHandlers}
     >
       <View style={styles.header}>
-        <Title style={styles.title}>𝙴𝚇𝙿𝙴𝙽𝚂𝙴𝚂 𝚁𝙴𝙿𝙾𝚁𝚃𝚂</Title>
+        <Title style={styles.title}>𝙴𝚇𝙿𝙴𝙽𝚂𝙴 𝚁𝙴𝙿𝙾𝚁𝚃</Title>
         <View style={styles.dateContainer}>
           <TouchableOpacity onPress={goToPrevDay}>
-            <AntDesign name="left" size={28} color="#6200ee" />
+            <AntDesign name="left" size={28} color="#3498db" />
           </TouchableOpacity>
           <TouchableOpacity onPress={showDatePicker}>
             <Text style={styles.dateText}>{formatDate(date)}</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={goToNextDay}>
-            <AntDesign name="right" size={28} color="#6200ee" />
+            <AntDesign name="right" size={28} color="#3498db" />
           </TouchableOpacity>
         </View>
       </View>
@@ -167,28 +151,17 @@ const ExpenseReport = () => {
         onCancel={hideDatePicker}
       />
 
-      {/* Display the filtered expense data */}
       {filteredData.length > 0 ? (
         filteredData.map((expense, index) => (
           <View key={index} style={styles.expenseContainer}>
-            <Text style={styles.expenseKey}>Category:</Text>
-            <Text style={styles.expenseValue}>{expense.Category || 'N/A'}</Text>
-            <Text style={styles.expenseKey}>City:</Text>
-            <Text style={styles.expenseValue}>{expense.City || 'N/A'}</Text>
             <Text style={styles.expenseKey}>Expense Type:</Text>
             <Text style={styles.expenseValue}>{expense.ExpenseType || 'N/A'}</Text>
             <Text style={styles.expenseKey}>Amount:</Text>
             <Text style={styles.expenseValue}>{expense.Amount || 'N/A'}</Text>
+            <Text style={styles.expenseKey}>City:</Text>
+            <Text style={styles.expenseValue}>{expense.City || 'N/A'}</Text>
             <Text style={styles.expenseKey}>Description:</Text>
             <Text style={styles.expenseValue}>{expense.Description || 'N/A'}</Text>
-            <Text style={styles.expenseKey}>Bill Submitted:</Text>
-            <Text style={styles.expenseValue}>{expense.BillSubmitted || 'N/A'}</Text>
-            <Text style={styles.expenseKey}>KM for Petrol Expenses:</Text>
-            <Text style={styles.expenseValue}>{expense.KMForPetrolExpenses || 'N/A'}</Text>
-            <Text style={styles.expenseKey}>Reference for KM Calculation:</Text>
-            <Text style={styles.expenseValue}>{expense.ReferenceForKMCalculation || 'N/A'}</Text>
-            <Text style={styles.expenseKey}>Details or Remarks:</Text>
-            <Text style={styles.expenseValue}>{expense.DetailsOrRemarks || 'N/A'}</Text>
           </View>
         ))
       ) : (
@@ -203,7 +176,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#f0f4f8', // Light background color
+    backgroundColor: '#121212',
   },
   header: {
     alignItems: 'center',
@@ -212,7 +185,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#333', // Darker text color
+    color: '#ffffff',
   },
   dateContainer: {
     flexDirection: 'row',
@@ -223,39 +196,43 @@ const styles = StyleSheet.create({
   dateText: {
     marginHorizontal: 10,
     fontSize: 18,
-
+    color: '#ffffff',
   },
   expenseContainer: {
     marginVertical: 10,
     padding: 15,
-    backgroundColor: '#F0FFF0', // White background for expense details
+    backgroundColor: '#1E1E1E',
     borderRadius: 12,
     shadowColor: '#000',
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.3,
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 4,
-    elevation: 2,
+    elevation: 3,
+    borderColor: '#333333',
+    borderWidth: 1,
   },
   expenseKey: {
     fontSize: 16,
-    fontWeight: 'bold', // Bold style for field keys
-    color: '#333',
+    fontWeight: 'bold',
+    color: '#3498db',
+    marginBottom: 4,
   },
   expenseValue: {
     fontSize: 16,
     marginBottom: 12,
-    color: '#555', // Softer text color for expense values
+    color: '#ffffff',
   },
   noDataText: {
     marginTop: 20,
     fontSize: 16,
-    color: '#999',
+    color: '#888888',
     textAlign: 'center',
   },
   errorText: {
-    fontSize: 18,
     color: 'red',
+    fontSize: 16,
     textAlign: 'center',
+    marginVertical: 20,
   },
 });
 
