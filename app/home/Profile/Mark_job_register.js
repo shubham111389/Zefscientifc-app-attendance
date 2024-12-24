@@ -68,29 +68,36 @@ const JobRegisterReport = () => {
  
   const onSubmit = async (data) => {
     console.log( data);
-    const formDatab = new FormData();
-    console.log(date.toDateString());
-    formDatab.append('Date',date.toDateString());
-    formDatab.append('EmployeeName', EmployeeName);
-    formDatab.append('WorkingStatus', data.WorkingStatus);
-    formDatab.append('VisitType', data.VisitType);
-    formDatab.append('City', data.City);
-    formDatab.append('Customer', data.Customer);
-    formDatab.append('ContactPerson', data.ContactPerson);
-    formDatab.append('JobType', data.JobType);
-    formDatab.append('Instrument', data.Instrument);
-    formDatab.append('SerialNo', data.SerialNo);
-    formDatab.append('JobCode', data.JobCode);
-    formDatab.append('AccompaniedBy', data.AccompaniedBy);
-   
-    formDatab.append('DetailsOfWorks', data.DetailsOfWorks  );
-    formDatab.append('Employee_Code',Employee_Code);
-    {console.log( Employee_Code)};
+    
+      console.log("Employee_Code before appending:", Employee_Code);
+    
+      const formDatab = new FormData();
+      formDatab.append('Date', date.toDateString());
+      formDatab.append('EmployeeName', EmployeeName);
+      formDatab.append('WorkingStatus', data.WorkingStatus);
+      formDatab.append('VisitType', data.VisitType);
+      formDatab.append('City', data.City);
+      formDatab.append('Customer', data.Customer);
+      formDatab.append('ContactPerson', data.ContactPerson);
+      formDatab.append('JobType', data.JobType);
+      formDatab.append('Instrument', data.Instrument);
+      formDatab.append('SerialNo', data.SerialNo);
+      formDatab.append('JobCode', data.JobCode);
+    
+      formDatab.append('DetailsOfWorks', data.DetailsOfWorks);
+      formDatab.append('Employee_Code',Employee_Code);
+      
+      // Ensure it's a string
+    
+      // Verify all appended data
+      
+      console.log("Submitted Form Data:");
+  
+
     
 
 
-
-    console.log("Submitted Form Data: ", formDatab);
+    
 
     try {
       const response = await fetch(API_URL_FOR_JOB_REGISTER_POST, {
@@ -728,7 +735,9 @@ const styles = StyleSheet.create({
       placeholder: '#7F8C8D',   // Placeholder text color
       background: '#172435',    // Background color
       surface: '#172435',       // Surface color
-      outlineVariant: '#3498DB' // Border color
+      outlineVariant: '#3498DB', // Border color
+      onSurface: '#ECF0F1',    // This is crucial for text color
+      onBackground: '#ECF0F1', // Additional text color property
     },
   },
 });

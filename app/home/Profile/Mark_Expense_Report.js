@@ -12,6 +12,7 @@ import useOnline from '../../../Hooks/useOnline';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+
 const ExpenseForm = () => {
   const isOnline = useOnline(); 
   const router = useRouter();
@@ -26,6 +27,10 @@ const ExpenseForm = () => {
   const [userData, setUserData] = useState(null); 
 
   const [EmployeeName, setEmployeeName] = useState("name");
+  const [Employee_Code,setEmployee_Code]=useState('00'); 
+  const [ Expense_Type,setExpense_Type]=useState();
+  
+
 
   const getUserData = async () => {
     try {
@@ -51,9 +56,11 @@ const ExpenseForm = () => {
   // New useEffect to set EmployeeName after userData is updated
   useEffect(() => {
     if (userData) {
+      setEmployee_Code(userData.Employee_Code)
       setEmployeeName(`${userData.firstName} ${userData.lastName}`); // Concatenate first and last names
     }
   }, [userData]);
+  console.log("Employee Name:", Employee_Code);
    // Trigger when userData is updated
  
   console.log("Employee Name:", EmployeeName);
@@ -73,6 +80,7 @@ const ExpenseForm = () => {
     formDatab.append('KMForPetrolExpenses', data.KMForPetrolExpenses);
     formDatab.append('ReferenceForKMCalculation', data.ReferenceForKMCalculation);
     formDatab.append('DetailsOrRemarks', data.DetailsOrRemarks);
+    formDatab.append('Employee_Code',Employee_Code);
 
     console.log("Submitted Form Data: ", formDatab);
     
@@ -298,7 +306,11 @@ const BillSubmittedOptions = isDropdown.Bill_submitted.map((type) => ({
                   searchPlaceholder="Expense Type"
                   value={value}
                   onBlur={onBlur}
-                  onChange={(item) => onChange(item.value)}
+                  onChange={(item) => {
+                    onChange(item.value);
+                    setExpense_Type(item.value);
+                    // Auto-set amount based on expense type
+              }}
                   placeholderStyle={styles.placeholderText}
                 />
                 {value && <Text style={styles.floatingLabel}>Expense Type</Text>}
@@ -307,27 +319,44 @@ const BillSubmittedOptions = isDropdown.Bill_submitted.map((type) => ({
             </>
           )}
         />
+     
+     <Controller
+  control={control}
+  name="Amount"
+  rules={{ required: 'Amount is required' }}
+  defaultValue=""
+  render={({ field: { onChange, onBlur, value } }) => {
+    // Set automatic values based on expense type
+    useEffect(() => {
+      if (Expense_Type === 'DA Local') {
+        onChange('150');
+      } else if (Expense_Type === 'DA Outstation') {
+        onChange('600');
+      }
+    }, [Expense_Type]);
 
-        <Controller
-          control={control}
-          name="Amount"
-          rules={{ required: 'Amount is required' }}
-          render={({ field: { onChange, onBlur, value } }) => (
-            <>
-              <TextInput
-                label="Amount"
-                mode="outlined"
-                keyboardType="numeric"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-                style={styles.input}
-                theme={styles.textInputTheme}
-              />
-              {errors.Amount && <HelperText type="error" style={styles.errorText}>{errors.Amount.message}</HelperText>}
-            </>
-          )}
+    return (
+      <>
+        <TextInput
+          label="Amount"
+          mode="outlined"
+          keyboardType="numeric"
+          onBlur={onBlur}
+          onChangeText={onChange}
+          value={value}
+          style={styles.input}
+          theme={styles.textInputTheme}
+          editable={!(Expense_Type === 'DA Local' || Expense_Type === 'DA Outstation')}
         />
+        {errors.Amount && (
+          <HelperText type="error" style={styles.errorText}>
+            {errors.Amount.message}
+          </HelperText>
+        )}
+      </>
+    );
+  }}
+/>
 
         <Controller
           control={control}
@@ -377,7 +406,7 @@ const BillSubmittedOptions = isDropdown.Bill_submitted.map((type) => ({
             </>
           )}
         />
-
+       {Expense_Type=== 'Petrol' && (
         <Controller
           control={control}
           name="KMForPetrolExpenses"
@@ -394,7 +423,9 @@ const BillSubmittedOptions = isDropdown.Bill_submitted.map((type) => ({
             />
           )}
         />
+       )}
 
+        {Expense_Type=== 'Petrol' && (
         <Controller
           control={control}
           name="ReferenceForKMCalculation"
@@ -410,6 +441,8 @@ const BillSubmittedOptions = isDropdown.Bill_submitted.map((type) => ({
             />
           )}
         />
+
+        )}
 
         <Controller
           control={control}
@@ -584,12 +617,14 @@ const styles = StyleSheet.create({
   },
   textInputTheme: {
     colors: {
-      primary: '#3498DB',
-      text: '#ECF0F1',
-      placeholder: '#7F8C8D',
-      background: '#172435',
-      surface: '#172435',
-      outlineVariant: '#3498DB'
+      primary: '#3498DB',      // Primary color for focus state
+      text: '#ECF0F1',         // Text color
+      placeholder: '#7F8C8D',   // Placeholder text color
+      background: '#172435',    // Background color
+      surface: '#172435',       // Surface color
+      outlineVariant: '#3498DB', // Border color
+      onSurface: '#ECF0F1',    // This is crucial for text color
+      onBackground: '#ECF0F1', // Additional text color property
     },
   },
 });
