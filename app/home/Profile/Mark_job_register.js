@@ -9,6 +9,7 @@ import { Dropdown } from 'react-native-element-dropdown';
 import LoadingScreen from './LoadingScreen';
 import useOnline from '../../../Hooks/useOnline';
 import { useRouter } from 'expo-router';
+import CustomAlert from './CustomAlert';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import useDropdownData from '../../../Hooks/useDropdownData';
 
@@ -31,6 +32,13 @@ const JobRegisterReport = () => {
   const [workingStatus, setWorkingStatus] = useState('Working ');
   const [ visitType,setVisitType]=useState('office');
   const [Employee_Code,setEmployee_Code]=useState('00'); 
+
+  const [alertConfig, setAlertConfig] = useState({
+      visible: false,  // Changed from isOpen to visible to match CustomAlert props
+      type: 'success',
+      title: '',
+      message: ''
+    });
 
   // State to store AsyncStorage dataconst
 
@@ -62,14 +70,13 @@ const JobRegisterReport = () => {
     }
   }, [userData]); // Trigger when userData is updated
   
-  console.log("Employee Name:", EmployeeName);
-  console.log("Employee Name:", Employee_Code);
+
 
  
   const onSubmit = async (data) => {
-    console.log( data);
+   
     
-      console.log("Employee_Code before appending:", Employee_Code);
+ 
     
       const formDatab = new FormData();
       formDatab.append('Date', date.toDateString());
@@ -87,9 +94,6 @@ const JobRegisterReport = () => {
       formDatab.append('DetailsOfWorks', data.DetailsOfWorks);
       formDatab.append('Employee_Code',Employee_Code);
       
-      // Ensure it's a string
-    
-      // Verify all appended data
       
       console.log("Submitted Form Data:");
   
@@ -100,34 +104,44 @@ const JobRegisterReport = () => {
     
 
     try {
-      const response = await fetch(API_URL_FOR_JOB_REGISTER_POST, {
-        method: 'POST',
-        body: formDatab,
-      });
+          const response = await fetch(API_URL_FOR_JOB_REGISTER_POST, {
+            method: 'POST',
+            body: formDatab,
+          });
+          console.log( response);
+          if (response.ok) {
+            setAlertConfig({
+              visible: true,
+              type: 'success',
+              title: 'Success! 🎉',
+              message: 'Your Job Register has been submitted successfully.'
+            });
+          } else {
+            setAlertConfig({
+              visible: true,
+              type: 'error',
+              title: 'Submission Failed',
+              message: 'There was an error submitting your Job Register report. Please try again.'
+            });
+          }
+          console.log( response);
+        } catch (error) {
+          console.error('Error:', error);
+          setAlertConfig({
+            visible: true,
+            type: 'error',
+            title: 'Connection Error',
+            message: 'Failed to connect to the server. Please check your internet connection.'
+          });
+         
+        }
+      };
     
-      const contentType = response.headers.get('content-type');
-      
-      if (contentType && contentType.includes('application/json')) {
-        const result = await response.json();
-        console.log(result);
-        Alert.alert('Success', 'Your Job Register submitted successfully!');
-      } else {
-        const result = await response.text();
-        console.log('Response is not JSON:', result);
-        Alert.alert('Success', 'Your Job Register submitted successfully!');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      Alert.alert('Error', 'Failed to submit the form.');
-    }
-  
-  
-  };
 
   const handleAddAnotherExpense = async (data) => {
     setIsLoading(true);
     await onSubmit(data); 
-    setIsLoading(false);// Wait for form submission to complete
+    setIsLoading(false);
     router.push('./Mark_Expense_Report'); // Navigate after form submission is done
   };
 
@@ -592,6 +606,14 @@ useEffect(() => {
                 <FontAwesome name="linkedin" size={24} color="#0077B5" style={styles.icon} />
                 <FontAwesome name="instagram" size={24} color="#E1306C" style={styles.icon} />
        </View>
+
+       <CustomAlert
+        visible={alertConfig.visible}
+        onClose={() => setAlertConfig(prev => ({ ...prev, visible: false }))}
+        type={alertConfig.type}
+        title={alertConfig.title}
+        message={alertConfig.message}
+      />
     </ScrollView>
   );
 };

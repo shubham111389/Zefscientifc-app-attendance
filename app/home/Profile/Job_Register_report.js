@@ -7,6 +7,7 @@ import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import LoadingScreen from './LoadingScreen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Footer from './Footer';
+import { useLocalSearchParams } from 'expo-router';
 
 const formatDate = (date) => {
   const options = { year: 'numeric', month: 'long', day: 'numeric' };
@@ -14,9 +15,10 @@ const formatDate = (date) => {
 };
 
 const Job_Register_Report = () => {
+  const {  jobRegisterData} = useLocalSearchParams();
   const [date, setDate] = useState(new Date());
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
-  const [jobRegisterData, setJobRegisterData] = useState([]);
+  const [jobRegisterData1, setJobRegisterData1] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -29,6 +31,7 @@ const Job_Register_Report = () => {
       const data = await AsyncStorage.getItem('@user_data');
       if (data) {
         setUserData(JSON.parse(data));
+        setLoading(false);
       }
     } catch (error) {
       console.error('Error fetching user data from AsyncStorage:', error);
@@ -46,24 +49,10 @@ const Job_Register_Report = () => {
   }, [userData]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch(API_URL_FOR_JOB_REGISTER_POST);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-          setLoading(false);
-        }
-        const result = await response.json();
-        setJobRegisterData(result.data);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        setError('Failed to fetch data');
-      } finally {
-        setLoading(false);
-      }
-    };
+    const result= JSON.parse(jobRegisterData);
+    setJobRegisterData1(result);
 
-    fetchData();
+
   }, []);
 
   const showDatePicker = () => {
@@ -93,14 +82,14 @@ const Job_Register_Report = () => {
   console.log( jobRegisterData);
   useEffect(() => {
     const formattedSelectedDate = formatDate(date);
-    const filtered = jobRegisterData.filter((job) => {
+    const filtered = jobRegisterData1.filter((job) => {
       const jobDate = formatDate(new Date(job.Date));
       const dateMatch = jobDate === formattedSelectedDate;
       const nameMatch = job.EmployeeName.trim().toLowerCase() === employeeName.trim().toLowerCase();
       return dateMatch && nameMatch;
     });
     setFilteredData(filtered);
-  }, [date, jobRegisterData, employeeName]);
+  }, [date, jobRegisterData1, employeeName]);
 
   const panResponder = PanResponder.create({
     onMoveShouldSetPanResponder: (evt, gestureState) => Math.abs(gestureState.dx) > 20,

@@ -9,6 +9,8 @@ import useUserData from "../../../Hooks/useUserData";
 import OfflineComponent from './OfflineComponent';
 import useOnline from '../../../Hooks/useOnline'; 
 import LoadingScreen from "./LoadingScreen";
+import { API_URL_FOR_JOB_REGISTER_POST} from '@env';
+import { API_URL_FOR_EXPENSE_POST } from '@env';
 
 const Home = () => {
   const isOnline = useOnline(); 
@@ -16,6 +18,11 @@ const Home = () => {
   const [userdata,setUserData] = useState();
   const { userDetails } = useUserData();
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoading1, setIsLoading1] = useState(true);
+  const [isLoading2, setIsLoading2] = useState(true);
+  const [jobRegisterData, setJobRegisterData] = useState(null);
+  const [expenseData, setExpenseData] = useState(null);
+    
 
   const checkUserSession = async () => {
     try {
@@ -34,15 +41,59 @@ const Home = () => {
     }
   };
 
+
+  useEffect(() => {
+      const fetchJobRegisterData = async () => {
+        try {
+          const response = await fetch(API_URL_FOR_JOB_REGISTER_POST);
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const result = await response.json();
+          setJobRegisterData(result.data);
+     
+        } catch (error) {
+          console.error('Error fetching job register data:', error);
+        } finally {
+          setIsLoading1(false);
+        }
+      };
+  
+      fetchJobRegisterData();
+    }, []);
+  
+    useEffect(() => {
+        const fetchData = async () => {
+          try {
+            const response = await fetch(API_URL_FOR_EXPENSE_POST);
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const result = await response.json();
+          
+            setExpenseData(result.data);
+          } catch (error) {
+            console.error('Error fetching data:', error);
+          } finally {
+            setIsLoading2(false);
+          }
+        };
+        fetchData();
+      }, []);
+   
+
+   console.log( jobRegisterData);
+   console.log( expenseData);
+
   useEffect(() => {
     checkUserSession();
   }, []); 
 
-  if (isLoading) {
+  if (isLoading || isLoading2 ||isLoading1) {
     return <LoadingScreen />;
   }
 
-  if (!isOnline) {
+  if (!isOnline ) {
     return <OfflineComponent />;
   }
 
@@ -101,10 +152,16 @@ const Home = () => {
           </View>
           
           <View style={styles.reportSection}>
-            <Pressable
-              onPress={() => router.push("/home/Profile/Job_Register_Report")}
-              style={styles.reportButton}
-            >
+          <Pressable 
+                onPress={() => router.push({
+                  pathname: "/home/Profile/Job_Register_Report",
+                  params: { 
+                    jobRegisterData: JSON.stringify(jobRegisterData)
+                  }
+                
+              })}
+                style={styles.reportButton}
+              >
               <View style={styles.reportIconContainer}>
                 <MaterialIcons name="work-outline" size={24} color="#3498DB" />
               </View>
@@ -113,11 +170,16 @@ const Home = () => {
                 <Entypo name="chevron-right" size={24} color="#E67E22" />
               </View>
             </Pressable>
-
+            
             <Pressable
-              onPress={() => router.push("/home/Profile/Expense_Report")}
-              style={styles.reportButton}
+              onPress={() => router.push({
+                pathname: "/home/Profile/Expense_Report",
+                params: { expenseData: JSON.stringify(expenseData)}
+              
+            })}
+            style={styles.reportButton}
             >
+        
               <View style={styles.reportIconContainer}>
                 <MaterialCommunityIcons name="wallet-outline" size={24} color="#2ECC71" />
               </View>
@@ -151,7 +213,13 @@ const Home = () => {
           {(userdata?.Profession === 'Manager' || userDetails?.Profession === 'Manager') && (
             <View style={styles.managerSection}>
               <Pressable 
-                onPress={() => router.push("/home/Profile/Team_data/Teams")}
+                onPress={() => router.push({
+                  pathname: "/home/Profile/Team_data/Teams",
+                  params: { expenseData: JSON.stringify(expenseData),
+                    jobRegisterData: JSON.stringify(jobRegisterData)
+                  }
+                
+              })}
                 style={styles.managerButton}
               >
                 <View style={styles.managerIconContainer}>

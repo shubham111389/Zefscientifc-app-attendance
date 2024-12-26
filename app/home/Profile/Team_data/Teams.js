@@ -5,21 +5,22 @@ import useRegionData from '../../../../Hooks/useRegion';
 import useUser from '../../../../Hooks/useUser';
 import LoadingScreen from '../LoadingScreen';
 import RNPickerSelect from 'react-native-picker-select';
-import { router } from 'expo-router';
-import { API_URL_FOR_JOB_REGISTER_POST} from '@env';
-import { API_URL_FOR_EXPENSE_POST } from '@env';
+import { router, useLocalSearchParams } from 'expo-router';
+
 import { LinearGradient } from 'expo-linear-gradient';
 import Footer from '../Footer';
 
 const Teams = () => {
+   const { expenseData, jobRegisterData} = useLocalSearchParams();
+   console.log( expenseData, jobRegisterData);
   const { regionData, loading, error } = useRegionData();
   const [userRegion, setUserRegion] = useState();
   const { userData, loading1 } = useUser();
   const [filteredRegionData, setFilteredRegionData] = useState([]);
+  const [expenseData1,setExpenseData1]=useState();
+  const [jobRegisterData1,setjobRegisterData1]=useState();
   const [selectedReport, setSelectedReport] = useState("Expense Report");
-  const [jobRegisterData, setJobRegisterData] = useState(null);
-  const [expenseData, setExpenseData] = useState(null);
-  const[isLoading, setIsLoading] = useState(true);
+
  
 
   useEffect(() => {
@@ -36,51 +37,21 @@ const Teams = () => {
     }
   }, [userData, regionData]);
 
-  // New useEffect for fetching job register data
-  useEffect(() => {
-    const fetchJobRegisterData = async () => {
-      try {
-        const response = await fetch(API_URL_FOR_JOB_REGISTER_POST);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const result = await response.json();
-        setJobRegisterData(result.data);
-   
-      } catch (error) {
-        console.error('Error fetching job register data:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  useEffect((()=>{
+    const result= JSON.parse(jobRegisterData);
 
-    fetchJobRegisterData();
-  }, []);
+    setjobRegisterData1(result);
+    const result2= JSON.parse(expenseData);
+    setExpenseData1(result2);
 
-  useEffect(() => {
-      const fetchData = async () => {
-        try {
-          const response = await fetch(API_URL_FOR_EXPENSE_POST);
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-          const result = await response.json();
-        
-          setExpenseData(result.data);
-        } catch (error) {
-          console.error('Error fetching data:', error);
-        } finally {
-          setIsLoading(false);
-        }
-      };
-      fetchData();
-    }, []);
+  }),[jobRegisterData, expenseData]);
+
  
 
   const handlePress = (routeName, employeeName) => {
     if (routeName === "Job Register") {
       // Find job register data for the specific employee
-      const employeeJobData = jobRegisterData?.filter(job => "Abhishekh" === employeeName);
+      const employeeJobData = jobRegisterData1?.filter(job => "Abhishekh" === employeeName);
    
       
       router.push({
@@ -91,9 +62,9 @@ const Teams = () => {
         },
       });
     } else if (routeName === "Expense Report") {
-      const employeeExpenseData = expenseData?.filter(job => "Abhishekh" === employeeName);
+      const employeeExpenseData = expenseData1?.filter(job => "Abhishekh" === employeeName);
       
-      
+
       router.push({
         pathname: "/home/Profile/Team_data/Employee_Expense_Report",
         params: { employeeName: employeeName ,
@@ -102,7 +73,7 @@ const Teams = () => {
       });
     }
   };
-  if (loading || loading1 || isLoading) {
+  if (loading || loading1 ) {
     return <LoadingScreen />;
   }
 

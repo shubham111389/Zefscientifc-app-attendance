@@ -7,6 +7,7 @@ import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import LoadingScreen from './LoadingScreen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Footer from './Footer';
+import { useLocalSearchParams } from 'expo-router';
 
 const formatDate = (date) => {
   const options = { year: 'numeric', month: 'long', day: 'numeric' };
@@ -14,6 +15,7 @@ const formatDate = (date) => {
 };
 
 const ExpenseReport = () => {
+  const {  expenseData} = useLocalSearchParams();
   const [date, setDate] = useState(new Date());
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [allExpenseData, setAllExpenseData] = useState([]);
@@ -22,12 +24,14 @@ const ExpenseReport = () => {
   const [error, setError] = useState(null);
   const [userData, setUserData] = useState(null);
   const [employeeName, setEmployeeName] = useState('Name');
+  
 
   const getUserData = async () => {
     try {
       const data = await AsyncStorage.getItem('@user_data');
       if (data) {
         setUserData(JSON.parse(data));
+        setLoading(false);
       }
     } catch (error) {
       console.error('Error fetching user data from AsyncStorage:', error);
@@ -45,25 +49,11 @@ const ExpenseReport = () => {
   }, [userData]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch(API_URL_FOR_EXPENSE_POST);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-          setLoading(false);
-        }
-        const result = await response.json();
-        setAllExpenseData(result.data);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        setError('Failed to fetch data');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
+      const result= JSON.parse(expenseData);
+      setAllExpenseData(result);
+  
+  
+    }, []);
 
   const showDatePicker = () => {
     setDatePickerVisibility(true);
@@ -93,13 +83,19 @@ const ExpenseReport = () => {
   useEffect(() => {
     const formattedSelectedDate = formatDate(date);
     const filtered = allExpenseData.filter((expense) => {
-      const expenseDate = formatDate(new Date(expense.Date));
+      console.log( expense.DateAndDay)
+      const expenseDate = formatDate(new Date(expense.DateAndDay));
+      console.log(expenseDate);
       const dateMatch = expenseDate === formattedSelectedDate;
+      console.log( dateMatch);
+    
       const nameMatch = expense.EmployeeName.trim().toLowerCase() === employeeName.trim().toLowerCase();
+      console.log(nameMatch);
       return dateMatch && nameMatch;
     });
     setFilteredData(filtered);
   }, [date, allExpenseData, employeeName]);
+  console.log( filteredData);
 
   const panResponder = PanResponder.create({
     onMoveShouldSetPanResponder: (evt, gestureState) => Math.abs(gestureState.dx) > 20,

@@ -10,8 +10,8 @@ import useDropdownData from '../../../Hooks/useDropdownData';
 import LoadingScreen from './LoadingScreen';
 import useOnline from '../../../Hooks/useOnline';
 import { useRouter } from 'expo-router';
+import CustomAlert from './CustomAlert';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
 
 const ExpenseForm = () => {
   const isOnline = useOnline(); 
@@ -24,53 +24,44 @@ const ExpenseForm = () => {
 
   const [isLoading, setIsLoading] = useState(true);  
   const [isDropdown, setIsDropdown] = useState();  
-  const [userData, setUserData] = useState(null); 
+  const [userData, setUserData] = useState(null);
+  const [alertConfig, setAlertConfig] = useState({
+    visible: false,  // Changed from isOpen to visible to match CustomAlert props
+    type: 'success',
+    title: '',
+    message: ''
+  });
 
   const [EmployeeName, setEmployeeName] = useState("name");
-  const [Employee_Code,setEmployee_Code]=useState('00'); 
-  const [ Expense_Type,setExpense_Type]=useState();
-  
-
+  const [Employee_Code, setEmployee_Code] = useState('00'); 
+  const [Expense_Type, setExpense_Type] = useState();
 
   const getUserData = async () => {
     try {
       const data = await AsyncStorage.getItem('@user_data');
-      console.log( data );
-      console.log('User data from AsyncStorage:', data);
       if (data) {
         setUserData(JSON.parse(data));
-        console.log(userData); // Update userData state
-      } else {  
-        console.log('No user data found in AsyncStorage');
       }
     } catch (error) {
       console.log('Error fetching user data from AsyncStorage:', error);
     }
   };
   
-  // useEffect to fetch user data on component mount
   useEffect(() => {
     getUserData();
   }, []);
   
-  // New useEffect to set EmployeeName after userData is updated
   useEffect(() => {
     if (userData) {
       setEmployee_Code(userData.Employee_Code)
-      setEmployeeName(`${userData.firstName} ${userData.lastName}`); // Concatenate first and last names
+      setEmployeeName(`${userData.firstName} ${userData.lastName}`);
     }
   }, [userData]);
-  console.log("Employee Name:", Employee_Code);
-   // Trigger when userData is updated
- 
-  console.log("Employee Name:", EmployeeName);
 
   const onSubmit = async (data) => {
     const formDatab = new FormData();
     formDatab.append('DateAndDay', data.DateDateAndDay || date.toDateString());
     formDatab.append('EmployeeName', EmployeeName);
-    console.log ( EmployeeName);
-
     formDatab.append('Category', data.Category);
     formDatab.append('City', data.City);
     formDatab.append('ExpenseType', data.ExpenseType);
@@ -80,38 +71,47 @@ const ExpenseForm = () => {
     formDatab.append('KMForPetrolExpenses', data.KMForPetrolExpenses);
     formDatab.append('ReferenceForKMCalculation', data.ReferenceForKMCalculation);
     formDatab.append('DetailsOrRemarks', data.DetailsOrRemarks);
-    formDatab.append('Employee_Code',Employee_Code);
+    formDatab.append('Employee_Code', Employee_Code);
 
-    console.log("Submitted Form Data: ", formDatab);
-    
     try {
       const response = await fetch(API_URL_FOR_EXPENSE_POST, {
         method: 'POST',
         body: formDatab,
       });
-    
-      const contentType = response.headers.get('content-type');
-      
-      if (contentType && contentType.includes('application/json')) {
-        const result = await response.json();
-        console.log(result);
-        Alert.alert('Success', 'Your Expense submitted successfully!');
+      console.log( response);
+      if (response.ok) {
+        setAlertConfig({
+          visible: true,
+          type: 'success',
+          title: 'Success! 🎉',
+          message: 'Your expense report has been submitted successfully.'
+        });
       } else {
-        const result = await response.text();
-        console.log('Response is not JSON:', result);
-        Alert.alert('Success', 'Your Expense submitted successfully!');
+        setAlertConfig({
+          visible: true,
+          type: 'error',
+          title: 'Submission Failed',
+          message: 'There was an error submitting your expense report. Please try again.'
+        });
       }
+      console.log( response);
     } catch (error) {
       console.error('Error:', error);
-      Alert.alert('Error', 'Failed to submit the form.');
+      setAlertConfig({
+        visible: true,
+        type: 'error',
+        title: 'Connection Error',
+        message: 'Failed to connect to the server. Please check your internet connection.'
+      });
+     
     }
   };
 
   const handleAddAnotherExpense = async (data) => {
     setIsLoading(true);
-    await onSubmit(data); 
-    setIsLoading(false);// Wait for form submission to complete
-    router.push('./Mark_Expense_Report'); // Navigate after form submission is done
+    await onSubmit(data);
+    setIsLoading(false);
+    router.push('./Mark_Expense_Report');
   };
 
  
@@ -494,6 +494,14 @@ const BillSubmittedOptions = isDropdown.Bill_submitted.map((type) => ({
                <FontAwesome name="linkedin" size={24} color="#0077B5" style={styles.icon} />
                <FontAwesome name="instagram" size={24} color="#E1306C" style={styles.icon} />
      </View>
+
+     <CustomAlert
+        visible={alertConfig.visible}
+        onClose={() => setAlertConfig(prev => ({ ...prev, visible: false }))}
+        type={alertConfig.type}
+        title={alertConfig.title}
+        message={alertConfig.message}
+      />
     </ScrollView>
   );
 };
