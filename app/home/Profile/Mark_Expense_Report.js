@@ -490,10 +490,10 @@ const BillSubmittedOptions = isDropdown.Bill_submitted.map((type) => ({
 
       <View style={styles.socialIconsContainer}>
         <FontAwesome name="facebook" size={24} color="#3498DB" style={styles.icon} />
-        <FontAwesome name="twitter" size={24} color="#3498DB" style={styles.icon} />
-        <FontAwesome name="linkedin" size={24} color="#3498DB" style={styles.icon} />
-        <FontAwesome name="instagram" size={24} color="#3498DB" style={styles.icon} />
-      </View>
+               <FontAwesome name="twitter" size={24} color="#1DA1F2" style={styles.icon} />
+               <FontAwesome name="linkedin" size={24} color="#0077B5" style={styles.icon} />
+               <FontAwesome name="instagram" size={24} color="#E1306C" style={styles.icon} />
+     </View>
     </ScrollView>
   );
 };

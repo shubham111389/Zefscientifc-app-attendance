@@ -90,7 +90,7 @@ const Job_Register_Report = () => {
     nextDay.setDate(date.getDate() + 1);
     setDate(nextDay);
   };
-
+  console.log( jobRegisterData);
   useEffect(() => {
     const formattedSelectedDate = formatDate(date);
     const filtered = jobRegisterData.filter((job) => {

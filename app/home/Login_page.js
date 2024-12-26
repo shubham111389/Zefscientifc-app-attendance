@@ -1,37 +1,35 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { useRouter } from "expo-router";
-import { useSelector } from 'react-redux';
-
-
-
 
 const Login_page = () => {
   const router = useRouter();
-  
 
   return (
     <View style={styles.container}>
-      <Image 
-        source={require('./../../assets/logo1.png')} // Replace with your logo's path
-        style={styles.logo}
-      />
-      
-      <Text style={styles.title}>ᴢᴇꜰ ꜱᴄɪᴇɴᴛɪꜰɪᴄ ɪɴᴅ ᴘᴠᴛ ʟᴛᴅ
-      </Text>
-      
-      <Text style={styles.subtitle}>Verify your identity to get started ?</Text>
+      <View style={styles.content}>
+        <Image 
+          source={require('./../../assets/logo1.png')} // Replace with your logo's path
+          style={styles.logo}
+        />
 
-      <TouchableOpacity style={styles.button} onPress={() => router.push("home/Login_form")}>
-        <Text style={styles.buttonText}>Continue with Email</Text>
-      </TouchableOpacity>
+        <Text style={styles.title}>ᴢᴇꜰ ꜱᴄɪᴇɴᴛɪꜰɪᴄ ɪɴᴅ ᴘᴠᴛ ʟᴛᴅ</Text>
+        <Text style={styles.subtitle}>Verify your identity to get started ?</Text>
 
-      {/* Footer text */}
-      <Text style={styles.footerText}>v1.0.0</Text>
-      
-      <TouchableOpacity>
-        <Text style={styles.linkText}>Terms of Service - Privacy Policy</Text>
-      </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={() => router.push("home/Login_form")}>
+          <Text style={styles.buttonText}>Continue with Email</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>v1.0.0</Text>
+        <TouchableOpacity>
+          <Text style={styles.linkText}>Terms of Service - Privacy Policy</Text>
+        </TouchableOpacity>
+        <Text style={styles.copyrightText}>
+          © 2024 ZEF SCIENTIFIC IND PVT LTD. All rights reserved.
+        </Text>
+      </View>
     </View>
   );
 };
@@ -40,9 +38,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#101010',
-    justifyContent: 'center',
-    alignItems: 'center',
     paddingHorizontal: 30,
+    justifyContent: 'space-between', // Ensures content and footer are spaced
+  },
+  content: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    flex: 1,
   },
   logo: {
     width: 270,
@@ -51,7 +53,6 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-   
     color: '#C0C0C0',
     textAlign: 'center',
     marginBottom: 50,
@@ -79,10 +80,13 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontFamily: 'sans-serif',
   },
+  footer: {
+    alignItems: 'center',
+    marginBottom: 20, 
+  },
   footerText: {
-    color: '#555555',
+    color: '#7b7d7d',
     fontSize: 14,
-    marginTop: 70,
     fontFamily: 'sans-serif-thin',
   },
   linkText: {
@@ -90,6 +94,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 15,
     textDecorationLine: 'underline',
+  },
+  copyrightText: {
+    color: "#7F8C8D", 
+    fontSize: 12,
+    textAlign: 'center',
+    marginTop: 10,
   },
 });
 

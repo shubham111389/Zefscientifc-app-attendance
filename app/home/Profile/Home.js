@@ -25,7 +25,7 @@ const Home = () => {
         setUserData(user1);
         console.log(user1);
       } else {
-        router.push('../Login_form');
+        router.push('../Login_page');
       }
     } catch (error) {
       console.error('Failed to load user data', error);

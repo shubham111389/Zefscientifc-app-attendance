@@ -1,18 +1,26 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView, Platform } from 'react-native';
-import { Ionicons, MaterialIcons, FontAwesome } from '@expo/vector-icons';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import useRegionData from '../../../../Hooks/useRegion';
 import useUser from '../../../../Hooks/useUser';
 import LoadingScreen from '../LoadingScreen';
-import RNPickerSelect from 'react-native-picker-select'; // Import modern picker
+import RNPickerSelect from 'react-native-picker-select';
 import { router } from 'expo-router';
+import { API_URL_FOR_JOB_REGISTER_POST} from '@env';
+import { API_URL_FOR_EXPENSE_POST } from '@env';
+import { LinearGradient } from 'expo-linear-gradient';
+import Footer from '../Footer';
 
 const Teams = () => {
   const { regionData, loading, error } = useRegionData();
   const [userRegion, setUserRegion] = useState();
   const { userData, loading1 } = useUser();
   const [filteredRegionData, setFilteredRegionData] = useState([]);
-  const [selectedReport, setSelectedReport] = useState("Job Register");
+  const [selectedReport, setSelectedReport] = useState("Expense Report");
+  const [jobRegisterData, setJobRegisterData] = useState(null);
+  const [expenseData, setExpenseData] = useState(null);
+  const[isLoading, setIsLoading] = useState(true);
+ 
 
   useEffect(() => {
     if (userData?.region) {
@@ -23,272 +31,278 @@ const Teams = () => {
   useEffect(() => {
     if (userData?.region && regionData?.length) {
       const regionMapping = regionData.find((data) => data.id === 'Region');
-      const userRegionData = regionMapping?.[userRegion]; 
+      const userRegionData = regionMapping?.[userRegion];
       setFilteredRegionData(userRegionData);
     }
   }, [userData, regionData]);
 
+  // New useEffect for fetching job register data
+  useEffect(() => {
+    const fetchJobRegisterData = async () => {
+      try {
+        const response = await fetch(API_URL_FOR_JOB_REGISTER_POST);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const result = await response.json();
+        setJobRegisterData(result.data);
+   
+      } catch (error) {
+        console.error('Error fetching job register data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchJobRegisterData();
+  }, []);
+
+  useEffect(() => {
+      const fetchData = async () => {
+        try {
+          const response = await fetch(API_URL_FOR_EXPENSE_POST);
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const result = await response.json();
+        
+          setExpenseData(result.data);
+        } catch (error) {
+          console.error('Error fetching data:', error);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      fetchData();
+    }, []);
+ 
+
   const handlePress = (routeName, employeeName) => {
-    console.log(`${routeName} pressed, Employee: ${employeeName}`);
     if (routeName === "Job Register") {
+      // Find job register data for the specific employee
+      const employeeJobData = jobRegisterData?.filter(job => "Abhishekh" === employeeName);
+   
+      
       router.push({
         pathname: "/home/Profile/Team_data/Employee_job_Report",
-        params: { employee: employeeName }, // Pass employee name here
+        params: { 
+          employeeName: employeeName,
+          jobRegisterData: JSON.stringify(employeeJobData) // Convert to string for routing
+        },
       });
     } else if (routeName === "Expense Report") {
+      const employeeExpenseData = expenseData?.filter(job => "Abhishekh" === employeeName);
+      
+      
       router.push({
         pathname: "/home/Profile/Team_data/Employee_Expense_Report",
-        params: { employee: employeeName }, // Pass employee name here
+        params: { employeeName: employeeName ,
+        expenseData: JSON.stringify(employeeExpenseData)
+        }
       });
     }
   };
-  
-
-  if (loading || loading1) {
+  if (loading || loading1 || isLoading) {
     return <LoadingScreen />;
   }
 
   if (error) {
     return (
       <View style={styles.errorContainer}>
-        <Text>Error loading data: {error.message}</Text>
+        <Text style={styles.errorText}>Error loading data: {error.message}</Text>
       </View>
     );
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.headerContainer}>
-        <MaterialIcons name="groups" size={32} color="#ffffff" style={styles.headerIcon} />
-        <Text style={styles.header}>My Team</Text>
-      </View>
+    <View style={styles.container}>
+      <LinearGradient 
+        colors={["#0F1B2C", "#172435"]} 
+        style={styles.gradientBackground}
+      >
+        <View style={styles.header}>
+          <View style={styles.headerTitleContainer}>
+            <MaterialIcons name="groups" size={28} color="#3498DB" />
+            <Text style={styles.headerTitle}>My Team</Text>
+          </View>
+          <MaterialIcons name="notifications-none" size={28} color="#3498DB" />
+        </View>
 
-      {/* Selection Box for Job Register or Expense Report */}
-      <View style={styles.selectionContainer}>
-        <Text style={styles.selectionLabel}>Select Report Type:</Text>
-        <RNPickerSelect
-          onValueChange={(value) => setSelectedReport(value)}
-          value={selectedReport}
-          style={pickerSelectStyles}
-          items={[
-            { label: 'Job Register', value: 'Job Register' },
-            { label: 'Expense Report', value: 'Expense Report' }
-          ]}
-        />
-      </View>
+        <ScrollView 
+          contentContainerStyle={styles.scrollViewContent}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.selectionContainer}>
+            <Text style={styles.selectionLabel}>Select Report Type</Text>
+            <View style={styles.pickerContainer}>
+              <RNPickerSelect
+                onValueChange={(value) => setSelectedReport(value)}
+                value={selectedReport}
+                style={pickerSelectStyles}
+                items={[
+                  { label: 'Job Register', value: 'Job Register' },
+                  { label: 'Expense Report', value: 'Expense Report' }
+                ]}
+              />
+            </View>
+          </View>
 
-      {/* Job Register View */}
-      {selectedReport === "Job Register" && (
-        <View style={styles.sectionCard}>
-          <Text style={styles.sectionHeader}>Job Register</Text>
-          <View style={styles.employeeList}>
+          <View style={styles.reportSection}>
             {filteredRegionData?.map((employee, index) => (
               <Pressable
                 key={index}
-                onPress={() => handlePress("Job Register",employee)}
-                style={({ pressed }) => [
-                  styles.employeeButton,
-                  pressed && styles.pressed,
-                ]}
+                onPress={() => handlePress(selectedReport, employee)}
+                style={styles.reportButton}
               >
-                <View style={styles.employeeContent}>
-                  <Ionicons name="person-circle-outline" size={28} color="#34495e" style={styles.icon} />
-                  <Text style={styles.employeeText}>{employee}</Text>
+                <View style={styles.reportIconContainer}>
+                  <Ionicons name="person-circle-outline" size={24} color="#3498DB" />
+                </View>
+                <Text style={styles.reportText}>{employee}</Text>
+                <View style={styles.reportChevronContainer}>
+                  <MaterialIcons name="chevron-right" size={24} color="#E67E22" />
                 </View>
               </Pressable>
             ))}
           </View>
+
+          <View style={styles.footerWrapper}>
+          <Footer />
         </View>
-      )}
-
-      {/* Expense Report View */}
-      {selectedReport === "Expense Report" && (
-        <View style={styles.sectionCard}>
-          <Text style={styles.sectionHeader}>Expense Report</Text>
-          <View style={styles.employeeList}>
-            {filteredRegionData?.map((employee, index) => (
-              <Pressable
-                key={index}
-                onPress={() => handlePress("Expense Report",  employee)}
-                style={({ pressed }) => [
-                  styles.employeeButton,
-                  pressed && styles.pressed,
-                ]}
-              >
-                <View style={styles.employeeContent}>
-                  <Ionicons name="person-circle-outline" size={28} color="#34495e" style={styles.icon} />
-                  <Text style={styles.employeeText}>{employee}</Text>
-                </View>
-              </Pressable>
-            ))}
-          </View>
-        </View>
-      )}
-
-      {/* Contact Info */}
-      <View style={styles.contactContainer}>
-        <Text style={styles.contactText}>
-          If you have any issues or need further assistance, please contact us at 
-          <Text style={styles.contactEmail}> a.shubham@zefsci.com</Text>
-        </Text>
-      </View>
-
-      {/* Social Icons */}
-      <View style={styles.socialIconsContainer}>
-        <FontAwesome name="facebook" size={24} color="Gray" style={styles.icon} />
-        <FontAwesome name="twitter" size={24} color="Gray" style={styles.icon} />
-        <FontAwesome name="linkedin" size={24} color="Black" style={styles.icon} />
-        <FontAwesome name="instagram" size={24} color="Black" style={styles.icon} />
-      </View>
-    </ScrollView>
+        </ScrollView>
+      </LinearGradient>
+    </View>
   );
 };
+
 const pickerSelectStyles = StyleSheet.create({
   inputIOS: {
     height: 50,
-    backgroundColor: '#ffffff',
-    borderRadius: 8,
-    paddingHorizontal: 10,
+    backgroundColor: 'transparent', // Changed to transparent
+    borderRadius: 12,
+    paddingHorizontal: 15,
     fontSize: 16,
-    color: '#34495e',
+    color: '#ECF0F1',
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#2C3E50',
     marginBottom: 15,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 3,
   },
   inputAndroid: {
-    height: 50,
-    backgroundColor: '#ffffff',
-    borderRadius: 8,
-    paddingHorizontal: 10,
+    height: 40,
+    backgroundColor: 'transparent', 
+    borderRadius: 12,
+    paddingHorizontal: 15,
     fontSize: 16,
-    color: '#34495e',
+    color: '#ECF0F1',
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#2C3E50',
     marginBottom: 15,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 3,
+  },
+  iconContainer: {
+    top: 12,
+    right: 12,
   },
 });
+
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
-    padding: 20,
-    backgroundColor: '#f4f6f8',
+    flex: 1,
+    backgroundColor: '#0F1B2C'
   },
-  headerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 20,
-    backgroundColor: '#2980b9',
-    paddingVertical: 10,
-    borderRadius: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-    elevation: 5,
-  },
-  headerIcon: {
-    marginRight: 10,
+  gradientBackground: {
+    flex: 1,
   },
   header: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#ffffff',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 18,
+    paddingTop: 20,
+    paddingBottom: 20,
+    backgroundColor: '#0F1B2C',
+    zIndex: 1000
+  },
+  headerTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: "600",
+    color: '#ECF0F1',
+  },
+  scrollViewContent: {
+    paddingHorizontal: 18,
   },
   selectionContainer: {
-    marginBottom: 20,
+    paddingTop: 20,
+    marginBottom: 20, // Added margin to create space between picker and report section
   },
   selectionLabel: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#34495e',
-    marginBottom: 10,
+    fontWeight: "600",
+    color: '#ECF0F1',
+    paddingBottom: 20,
   },
-  sectionCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 10,
-    padding: 15,
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 3,
-  },
-  sectionHeader: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#34495e',
-    marginBottom: 15,
-  },
-  employeeList: {
-    marginTop: 10,
-  },
-  employeeButton: {
-    padding: 15,
-    marginVertical: 10,
-    backgroundColor: '#f0f8ff',
-    borderRadius: 10,
+  pickerContainer: {
+    backgroundColor: "#172435",
+    borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#d6eaf8',
+    borderColor: '#2C3E50',
+    marginBottom: 0, // Removed negative margin
   },
-  pressed: {
-    backgroundColor: '#d6eaf8',
+  reportSection: {
+    backgroundColor: "#172435",
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderRadius: 12,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#2C3E50',
   },
-  employeeContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  reportButton: {
+    backgroundColor: "#0F1B2C",
+    borderRadius: 12,
+    padding: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 7,
+    borderWidth: 1,
+    borderColor: '#2C3E50',
   },
-  icon: {
-    marginRight: 10,
+  reportIconContainer: {
+    padding: 7,
+    width: 45,
+    height: 45,
+    borderRadius: 7,
+    backgroundColor: "#172435",
+    alignItems: "center",
+    justifyContent: "center",
   },
-  employeeText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#34495e',
-  },
-  contactContainer: {
-    marginTop: 20,
-    paddingHorizontal: 16,
-    justifyContent: 'center',
-    alignItems:'center',
-  },
-  contactText: {
+  reportText: {
+    marginLeft: 10,
     fontSize: 16,
-    color: '#34495e',
-    textAlign: 'center',
-  },
-  contactEmail: {
-    color: '#2980b9',
-    fontWeight: 'bold',
-  },
-  socialIconsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 20,
-  },
-  icon: {
-    margin: 10,
-  },
-  errorContainer: {
+    fontWeight: "600",
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f8d7da',
-    padding: 20,
+    color: '#ECF0F1',
+  },
+  reportChevronContainer: {
+    width: 35,
+    height: 35,
+    borderRadius: 7,
+    backgroundColor: "#172435",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  footerWrapper: {
+    
+    paddingBottom:-10,
+  
+    
+    backgroundColor: 'transparent',
   },
 });
 
-export default Teams;
 
+export default Teams;

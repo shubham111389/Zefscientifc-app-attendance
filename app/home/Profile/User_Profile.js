@@ -53,7 +53,7 @@ const User_Profile = () => {
       // Clear AsyncStorage and sign out from Firebase
       await AsyncStorage.removeItem('@user_data');
       await signOut(auth);
-      router.push('../Login_form');
+      router.push('../Login_page');
     } catch (error) {
       console.error('Error during sign-out:', error);
     }
