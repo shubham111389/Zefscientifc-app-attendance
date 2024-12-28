@@ -1,246 +1,350 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { auth, db } from "../../firebase";
 import { setDoc, doc } from "firebase/firestore";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { useRouter } from 'expo-router';
-import { useSelector } from 'react-redux';
-import useOnline from '../../Hooks/useOnline'; // Import the useOnline hook
+import useOnline from '../../Hooks/useOnline';
 import OfflineComponent from './Profile/OfflineComponent';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import CustomAlert from './Profile/CustomAlert';
 
-
-const Login_form = () => {
+const LoginForm = () => {
   const [isSignInForm, setIsSignInForm] = useState(true);
-  const [emailError, setEmailError] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [passwordError, setPasswordError] = useState('');
-  const [FirstName, setFirstName] = useState('');
-  const [LastName, setLastName] = useState('');
-  const [EmployeeCode, setEmployeeCode] = useState('');
-  const [loading, setLoading] = useState(false); // Loading state
+  const [formData, setFormData] = useState({
+    email: { value: '', error: '' },
+    password: { value: '', error: '' },
+    firstName: { value: '', error: '' },
+    lastName: { value: '', error: '' },
+    employeeCode: { value: '', error: '' }
+  });
+  const [loading, setLoading] = useState(false);
+  const [alert, setAlert] = useState({
+    visible: false,
+    type: 'success',
+    title: '',
+    message: ''
+  });
   const router = useRouter();
+  const isOnline = useOnline();
 
-  const isOnline = useOnline(); // Call useOnline to check the network status
-  
+  const showAlert = (type, title, message) => {
+    setAlert({
+      visible: true,
+      type,
+      title,
+      message
+    });
+  };
+
+  const hideAlert = () => {
+    setAlert(prev => ({ ...prev, visible: false }));
+    if (alert.type === 'success') {
+      router.push("/home/Profile/Home");
+    }
+  };
+
+  const updateFormField = (field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: { value, error: validateField(field, value) }
+    }));
+  };
+
+  const validateField = (field, value) => {
+    switch (field) {
+      case 'email':
+        if (!value) return 'Email is required';
+        if (!value.endsWith('@zefsci.com')) return 'Please use a @zefsci.com email address';
+        return '';
+      case 'password':
+        if (!value) return 'Password is required';
+        if (value.length < 8) return 'Password must be at least 8 characters';
+        if (!/[A-Z]/.test(value)) return 'Include at least one uppercase letter';
+        if (!/[a-z]/.test(value)) return 'Include at least one lowercase letter';
+        if (!/[0-9]/.test(value)) return 'Include at least one number';
+        if (!/[!@#$%^&*(),.?":{}|<>]/.test(value)) return 'Include at least one special character';
+        return '';
+      case 'firstName':
+        return !value && !isSignInForm ? 'First name is required' : '';
+      case 'lastName':
+        return !value && !isSignInForm ? 'Last name is required' : '';
+      case 'employeeCode':
+        return !value && !isSignInForm ? 'Employee code is required' : '';
+      default:
+        return '';
+    }
+  };
+
   const storeUserData = async (userDetails) => {
     try {
       await AsyncStorage.setItem('@user_data', JSON.stringify(userDetails));
-    } catch (e) {
-      console.error("Failed to store user data in AsyncStorage", e);
+    } catch (error) {
+      console.error("AsyncStorage Error:", error);
+      showAlert('error', 'Storage Error', 'Failed to store user data');
     }
   };
+
   const handleSubmit = async () => {
-    if (emailError || email === '') {
-      alert('Please use a "@zefsci.com" email address');
-      return;
-    } else if (passwordError) {
-      alert(JSON.stringify(passwordError));
+    // Validate all fields
+    const errors = {};
+    Object.keys(formData).forEach(field => {
+      if (!isSignInForm && ['firstName', 'lastName', 'employeeCode'].includes(field) || 
+          ['email', 'password'].includes(field)) {
+        errors[field] = validateField(field, formData[field].value);
+      }
+    });
+
+    // Update form with any errors
+    setFormData(prev => {
+      const updated = { ...prev };
+      Object.keys(errors).forEach(field => {
+        updated[field] = { ...prev[field], error: errors[field] };
+      });
+      return updated;
+    });
+
+    // Check if there are any errors
+    if (Object.values(errors).some(error => error)) {
       return;
     }
 
     setLoading(true);
+
     try {
       if (isSignInForm) {
-        // Sign In logic
-        try {
-          await signInWithEmailAndPassword(auth, email, password);
-          const user = auth.currentUser;
-          const userDetails = {
-            uid: user.uid,
-            email: user.email,
-            displayName: user.displayName,
-            // Add more fields as needed
-          };
-      
-          // Store the user details in AsyncStorage
-          storeUserData(userDetails);
-          console.log( user);
-          alert("Welcome in ZEF SCIENTIFIC IND PVT LTD");
-          router.push("/home/Profile/Home");
-        } catch (error) {
-          console.log(error.message);
-          alert('Sorry! Password does not match your Email ID');
-        }
+        const userCredential = await signInWithEmailAndPassword(
+          auth, 
+          formData.email.value, 
+          formData.password.value
+        );
+        
+        const userDetails = {
+          uid: userCredential.user.uid,
+          email: userCredential.user.email,
+          displayName: userCredential.user.displayName,
+        };
+        
+        await storeUserData(userDetails);
+        showAlert('success', 'Welcome!', 'Successfully signed in to ZEF SCIENTIFIC IND PVT LTD');
       } else {
-        // Sign Up logic
-        try {
-          await createUserWithEmailAndPassword(auth, email, password);
-          const user = auth.currentUser;
-          if (user) {
-            await setDoc(doc(db, "Users", user.uid), {
-              email: user.email,
-              firstName: FirstName,
-              lastName: LastName,
-              Employee_Code: EmployeeCode,
-              photo: ""
-            });
-          }
-          const userDetails = {
-            uid: user.uid,
-            email: user.email,
-            displayName: user.FirstName,
-            // Add more fields as needed
-          };
-      
-          // Store the user details in AsyncStorage
-          storeUserData(userDetails);
-          alert("Welcome to ZEF SCIENTIFIC PVT LTD");
-          router.push("/home/Profile/Home");
-        } catch (error) {
-          console.log(error.message);
-          alert(error.message);
-        }
+        const userCredential = await createUserWithEmailAndPassword(
+          auth, 
+          formData.email.value, 
+          formData.password.value
+        );
+        
+        await setDoc(doc(db, "Users", userCredential.user.uid), {
+          email: formData.email.value,
+          firstName: formData.firstName.value,
+          lastName: formData.lastName.value,
+          employeeCode: formData.employeeCode.value,
+          photo: ""
+        });
+
+        const userDetails = {
+          uid: userCredential.user.uid,
+          email: userCredential.user.email,
+          displayName: formData.firstName.value,
+        };
+        
+        await storeUserData(userDetails);
+        showAlert('success', 'Welcome!', 'Successfully registered with ZEF SCIENTIFIC IND PVT LTD');
       }
-      setLoading(false);
     } catch (error) {
-      console.log(error.message);
-      alert(JSON.stringify(error.message));
+      console.error("Auth Error:", error);
+      const errorMessages = {
+        'auth/wrong-password': {
+          title: 'Invalid Credentials',
+          message: 'The password you entered is incorrect. Please try again.'
+        },
+        'auth/user-not-found': {
+          title: 'Account Not Found',
+          message: 'No account exists with this email address.'
+        },
+        'auth/email-already-in-use': {
+          title: 'Email Already Registered',
+          message: 'This email is already registered. Please sign in instead.'
+        },
+        'auth/invalid-email': {
+          title: 'Invalid Email',
+          message: 'Please enter a valid email address.'
+        },
+        'auth/weak-password': {
+          title: 'Weak Password',
+          message: 'Password should be at least 6 characters long.'
+        },
+        'default': {
+          title: 'Error',
+          message: 'An unexpected error occurred. Please try again.'
+        }
+      };
+
+      const errorInfo = errorMessages[error.code] || errorMessages.default;
+      showAlert('error', errorInfo.title, errorInfo.message);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const validatePassword = (inputPassword) => {
-    setPassword(inputPassword);
-    const minLength = 8;
-    const hasUpperCase = /[A-Z]/.test(inputPassword);
-    const hasLowerCase = /[a-z]/.test(inputPassword);
-    const hasNumber = /[0-9]/.test(inputPassword);
-    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(inputPassword);
+  if (!isOnline) return <OfflineComponent />;
 
-    if (inputPassword.length < minLength) {
-      setPasswordError(`Password must be at least ${minLength} characters long.`);
-    } else if (!hasUpperCase) {
-      setPasswordError('Password must contain at least one uppercase letter.');
-    } else if (!hasLowerCase) {
-      setPasswordError('Password must contain at least one lowercase letter.');
-    } else if (!hasNumber) {
-      setPasswordError('Password must contain at least one number.');
-    } else if (!hasSpecialChar) {
-      setPasswordError('Password must contain at least one special character.');
-    } else {
-      setPasswordError(''); // Clear the error if the password is valid
-    }
-  };
-
-  const toggleSignInForm = () => {
-    setIsSignInForm(!isSignInForm);
-  };
-
-  const handleEmailChange = (inputEmail) => {
-    setEmail(inputEmail);
-    if (!inputEmail.endsWith('@zefsci.com')) {
-      setEmailError('Please use a @zefsci.com email address.');
-    } else {
-      setEmailError(''); // Clear the error if the email is valid
-    }
-  };
-
-  if (!isOnline) {
-    return <OfflineComponent/>;
-  }
-  return (
-    <View style={styles.container}>
-      <Image source={{ uri: 'https://as1.ftcdn.net/v2/jpg/04/79/83/18/1000_F_479831845_S6LGeWAaIs6LzUSIsqwYYhB0OSbGqBZZ.jpg' }} style={styles.backgroundImage} />
-      
-      <View style={styles.formContainer}>
-        <Text style={styles.title}>{isSignInForm ? 'Sign In' : 'Sign Up'}</Text>
-
-        {!isSignInForm && (
-          <>
-            <TextInput
-              placeholder="First Name"
-              style={styles.input}
-              placeholderTextColor="#ccc"
-              onChangeText={(text) => setFirstName(text)}
-            />
-            <TextInput
-              placeholder="Last Name"
-              style={styles.input}
-              placeholderTextColor="#ccc"
-              onChangeText={(text) => setLastName(text)}
-            />
-            <TextInput
-              placeholder="Employee Code"
-              style={styles.input}
-              placeholderTextColor="#ccc"
-              autoCapitalize="characters"
-              onChangeText={(text) => setEmployeeCode(text)}
-            />
-          </>
-        )}
-        
-        <TextInput
-          placeholder="Email Address"
-          style={styles.input}
-          placeholderTextColor="#ccc"
-          keyboardType="email-address"
-          autoCapitalize="none"
-          onChangeText={handleEmailChange}
-        />
-        
-        <TextInput
-          placeholder="Password"
-          style={styles.input}
-          placeholderTextColor="#ccc"
-          secureTextEntry
-          value={password}
-          onChangeText={validatePassword}
-        />
-
-        {loading ? (
-          <ActivityIndicator size="large" color="#FFD700" />
-        ) : (
-          <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-            <Text style={styles.buttonText}>{isSignInForm ? 'Sign In' : 'Sign Up'}</Text>
-          </TouchableOpacity>
-        )}
-
-        <TouchableOpacity onPress={toggleSignInForm}>
-          <Text style={styles.toggleText}>
-            {isSignInForm ? 'New here? Sign Up Now' : 'Already registered? Sign In Now'}
-          </Text>
-        </TouchableOpacity>
-      </View>
+  const renderInput = (field, placeholder, options = {}) => (
+    <View style={styles.inputContainer}>
+      <TextInput
+        placeholder={placeholder}
+        style={[styles.input, formData[field].error && styles.inputError]}
+        placeholderTextColor="#999"
+        value={formData[field].value}
+        onChangeText={(text) => updateFormField(field, text)}
+        {...options}
+      />
+      {formData[field].error ? (
+        <Text style={styles.errorText}>{formData[field].error}</Text>
+      ) : null}
     </View>
+  );
+
+  return (
+    <KeyboardAvoidingView 
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={styles.container}
+    >
+      <Image 
+        source={{ uri: 'https://as1.ftcdn.net/v2/jpg/04/79/83/18/1000_F_479831845_S6LGeWAaIs6LzUSIsqwYYhB0OSbGqBZZ.jpg' }} 
+        style={styles.backgroundImage} 
+      />
+      
+      <ScrollView 
+        contentContainerStyle={styles.scrollContainer}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.formContainer}>
+          <Text style={styles.title}>{isSignInForm ? 'Sign In' : 'Sign Up'}</Text>
+          
+          {!isSignInForm && (
+            <>
+              {renderInput('firstName', 'First Name')}
+              {renderInput('lastName', 'Last Name')}
+              {renderInput('employeeCode', 'Employee Code', {
+                autoCapitalize: 'characters'
+              })}
+            </>
+          )}
+          
+          {renderInput('email', 'Email Address', {
+            keyboardType: 'email-address',
+            autoCapitalize: 'none',
+            autoComplete: 'email'
+          })}
+          
+          {renderInput('password', 'Password', {
+            secureTextEntry: true,
+            autoComplete: 'password'
+          })}
+
+          {loading ? (
+            <ActivityIndicator size="large" color="#FFD700" style={styles.loader} />
+          ) : (
+            <TouchableOpacity 
+              style={styles.button} 
+              onPress={handleSubmit}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.buttonText}>
+                {isSignInForm ? 'Sign In' : 'Sign Up'}
+              </Text>
+            </TouchableOpacity>
+          )}
+
+          <TouchableOpacity 
+            onPress={() => {
+              setIsSignInForm(!isSignInForm);
+              setFormData({
+                email: { value: '', error: '' },
+                password: { value: '', error: '' },
+                firstName: { value: '', error: '' },
+                lastName: { value: '', error: '' },
+                employeeCode: { value: '', error: '' }
+              });
+            }}
+            style={styles.toggleButton}
+          >
+            <Text style={styles.toggleText}>
+              {isSignInForm ? 'New here? Sign Up Now' : 'Already registered? Sign In Now'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+
+      <CustomAlert
+        visible={alert.visible}
+        type={alert.type}
+        title={alert.title}
+        message={alert.message}
+        onClose={hideAlert}
+      />
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     backgroundColor: '#000',
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    padding: 20,
   },
   backgroundImage: {
     ...StyleSheet.absoluteFillObject,
     opacity: 0.7,
   },
   formContainer: {
-    width: '80%',
+    width: '100%',
     backgroundColor: 'rgba(0, 0, 0, 0.8)',
     padding: 20,
-    borderRadius: 10,
+    borderRadius: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
     color: '#FFD700',
-    marginBottom: 20,
+    marginBottom: 25,
     textAlign: 'center',
+  },
+  inputContainer: {
+    marginBottom: 15,
   },
   input: {
     backgroundColor: '#333',
     color: '#fff',
     padding: 15,
-    borderRadius: 5,
-    marginBottom: 15,
+    borderRadius: 8,
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  inputError: {
+    borderColor: '#ff4444',
+  },
+  errorText: {
+    color: '#ff4444',
+    fontSize: 12,
+    marginTop: 5,
+    marginLeft: 5,
   },
   button: {
     backgroundColor: '#e50914',
     padding: 15,
-    borderRadius: 5,
+    borderRadius: 8,
     alignItems: 'center',
     marginBottom: 20,
   },
@@ -249,22 +353,18 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
+  toggleButton: {
+    padding: 10,
+  },
   toggleText: {
     color: '#1e90ff',
     textAlign: 'center',
+    fontSize: 14,
     textDecorationLine: 'underline',
   },
-  offlineContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#000',
-  },
-  offlineText: {
-    fontSize: 20,
-    color: '#fff',
-    textAlign: 'center',
+  loader: {
+    marginVertical: 20,
   },
 });
 
-export default Login_form;
+export default LoginForm;

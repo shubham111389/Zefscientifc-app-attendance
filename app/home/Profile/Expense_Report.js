@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, ScrollView, TouchableOpacity, Text, PanResponder } from 'react-native';
-import { Title } from 'react-native-paper';
-import { AntDesign } from '@expo/vector-icons';
-import { API_URL_FOR_EXPENSE_POST } from '@env';
+import { AntDesign, MaterialIcons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import LoadingScreen from './LoadingScreen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -15,7 +14,7 @@ const formatDate = (date) => {
 };
 
 const ExpenseReport = () => {
-  const {  expenseData} = useLocalSearchParams();
+  const { expenseData } = useLocalSearchParams();
   const [date, setDate] = useState(new Date());
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [allExpenseData, setAllExpenseData] = useState([]);
@@ -24,7 +23,6 @@ const ExpenseReport = () => {
   const [error, setError] = useState(null);
   const [userData, setUserData] = useState(null);
   const [employeeName, setEmployeeName] = useState('Name');
-  
 
   const getUserData = async () => {
     try {
@@ -110,7 +108,7 @@ const ExpenseReport = () => {
 
   if (loading) {
     return <LoadingScreen />;
-  }
+  }   
 
   if (error) {
     return (
@@ -120,112 +118,276 @@ const ExpenseReport = () => {
     );
   }
 
-  return (
-    <ScrollView
-      style={styles.container}
-      {...panResponder.panHandlers}
-    >
-      <View style={styles.header}>
-        <Title style={styles.title}>𝙴𝚇𝙿𝙴𝙽𝚂𝙴 𝚁𝙴𝙿𝙾𝚁𝚃</Title>
-        <View style={styles.dateContainer}>
-          <TouchableOpacity onPress={goToPrevDay}>
-            <AntDesign name="left" size={28} color="#3498db" />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={showDatePicker}>
-            <Text style={styles.dateText}>{formatDate(date)}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={goToNextDay}>
-            <AntDesign name="right" size={28} color="#3498db" />
-          </TouchableOpacity>
+
+
+  
+
+  const renderExpenseDetail = (icon, label, value) => {
+    if (!value || value === 'N/A') return null;
+    
+    return (
+      <View style={styles.detailRow}>
+        <MaterialIcons name={icon} size={20} color="#6264A7" />
+        <View style={styles.detailContent}>
+          <Text style={styles.detailLabel}>{label}:</Text>
+          <Text style={styles.detailValue}>{value}</Text>
         </View>
       </View>
+    );
+  };
 
-      <DateTimePickerModal
-        isVisible={isDatePickerVisible}
-        mode="date"
-        onConfirm={handleConfirm}
-        onCancel={hideDatePicker}
-      />
+  const getExpenseTypeColor = (type) => {
+    switch(type?.trim().toLowerCase()) {
+      case 'da outstation':
+        return '#3498DB'; // Changed to match home theme blue
+      case 'transportation':
+        return '#E74C3C'; // Changed to match home theme red
+      case 'communication':
+        return '#F39C12'; // Changed to match home theme orange
+      default:
+        return '#2ECC71'; // Changed to match home theme green
+    }
+  };
 
-      {filteredData.length > 0 ? (
-        filteredData.map((expense, index) => (
-          <View key={index} style={styles.expenseContainer}>
-            <Text style={styles.expenseKey}>Expense Type:</Text>
-            <Text style={styles.expenseValue}>{expense.ExpenseType || 'N/A'}</Text>
-            <Text style={styles.expenseKey}>Amount:</Text>
-            <Text style={styles.expenseValue}>{expense.Amount || 'N/A'}</Text>
-            <Text style={styles.expenseKey}>City:</Text>
-            <Text style={styles.expenseValue}>{expense.City || 'N/A'}</Text>
-            <Text style={styles.expenseKey}>Description:</Text>
-            <Text style={styles.expenseValue}>{expense.Description || 'N/A'}</Text>
+  if (loading) return <LoadingScreen />;
+  if (error) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.errorText}>Error: {error}</Text>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      <LinearGradient 
+        colors={["#0F1B2C", "#172435"]} 
+        style={styles.gradientBackground}
+      >
+        <ScrollView style={styles.scrollView}>
+          <View style={styles.header}>
+            <View style={styles.headerTop}>
+              <MaterialIcons name="receipt-long" size={28} color="#3498DB" />
+              <Text style={styles.headerTitle}>Expense Report</Text>
+            </View>
+            
+            <View style={styles.dateNavigator}>
+              <TouchableOpacity onPress={goToPrevDay} style={styles.dateButton}>
+                <AntDesign name="left" size={24} color="#3498DB" />
+              </TouchableOpacity>
+              
+              <TouchableOpacity onPress={showDatePicker} style={styles.dateDisplay}>
+                <MaterialIcons name="event" size={20} color="#3498DB" />
+                <Text style={styles.dateText}>{formatDate(date)}</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity onPress={goToNextDay} style={styles.dateButton}>
+                <AntDesign name="right" size={24} color="#3498DB" />
+              </TouchableOpacity>
+            </View>
           </View>
-        ))
-      ) : (
-        <Text style={styles.noDataText}>Heyy! {employeeName}, no expenses were recorded for this date. Check back later for any updates.</Text>
-      )}
-      <Footer />
-    </ScrollView>
+
+          <DateTimePickerModal
+            isVisible={isDatePickerVisible}
+            mode="date"
+            onConfirm={handleConfirm}
+            onCancel={hideDatePicker}
+          />
+
+          {filteredData.length > 0 ? (
+            filteredData.map((expense, index) => (
+              <View key={index} style={styles.card}>
+                <View style={styles.cardContent}>
+                  <View style={styles.cardHeader}>
+                    <View style={[styles.typeBadge, { backgroundColor: `${getExpenseTypeColor(expense.ExpenseType)}20` }]}>
+                      <View style={[styles.typeDot, { backgroundColor: getExpenseTypeColor(expense.ExpenseType) }]} />
+                      <Text style={[styles.typeText, { color: getExpenseTypeColor(expense.ExpenseType) }]}>
+                        {expense.ExpenseType || 'N/A'}
+                      </Text>
+                    </View>
+                    
+                    <View style={styles.amountBadge}>
+                      <MaterialIcons name="attach-money" size={16} color="#3498DB" />
+                      <Text style={styles.amountText}>₹{expense.Amount}</Text>
+                    </View>
+                  </View>
+
+                  {renderExpenseDetail("location-city", "City", expense.City)}
+                  {renderExpenseDetail("description", "Description", expense.Description)}
+                  {renderExpenseDetail("category", "Category", expense.Category)}
+                  {expense.KMForPetrolExpenses && renderExpenseDetail("directions-car", "KM for Petrol", expense.KMForPetrolExpenses)}
+                </View>
+              </View>
+            ))
+          ) : (
+            <View style={styles.emptyState}>
+              <MaterialIcons name="receipt-long" size={70} color="#3498DB" style={styles.emptyIcon} />
+              <Text style={styles.emptyTitle}>No Expenses Found</Text>
+              <Text style={styles.emptyDescription}>
+                Hey {employeeName}! No expenses were recorded for {formatDate(date)}.
+              </Text>
+            </View>
+          )}
+          <Footer />
+        </ScrollView>
+      </LinearGradient>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: '#121212',
+    backgroundColor: '#0F1B2C'
+  },
+  gradientBackground: {
+    flex: 1
+  },
+  scrollView: {
+    flex: 1,
+    padding: 16,
   },
   header: {
-    alignItems: 'center',
     marginBottom: 20,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#2C3E50',
   },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#ffffff',
+  headerTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
   },
-  dateContainer: {
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#ECF0F1',
+    marginLeft: 10,
+  },
+  dateNavigator: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginVertical: 10,
+  },
+  dateButton: {
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: '#172435',
+    borderWidth: 1,
+    borderColor: '#2C3E50',
+  },
+  dateDisplay: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#172435',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginHorizontal: 12,
+    borderWidth: 1,
+    borderColor: '#2C3E50',
   },
   dateText: {
-    marginHorizontal: 10,
-    fontSize: 18,
-    color: '#ffffff',
+    color: '#ECF0F1',
+    fontSize: 16,
+    marginLeft: 8,
   },
-  expenseContainer: {
-    marginVertical: 10,
-    padding: 15,
-    backgroundColor: '#1E1E1E',
+  card: {
+    marginBottom: 16,
     borderRadius: 12,
-    shadowColor: '#000',
-    shadowOpacity: 0.3,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-    elevation: 3,
-    borderColor: '#333333',
+    backgroundColor: '#172435',
     borderWidth: 1,
+    borderColor: '#2C3E50',
   },
-  expenseKey: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#3498db',
-    marginBottom: 4,
+  cardContent: {
+    padding: 16,
   },
-  expenseValue: {
-    fontSize: 16,
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  typeBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  typeDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 8,
+  },
+  typeText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  amountBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#0F1B2C',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  amountText: {
+    color: '#ECF0F1',
+    marginLeft: 6,
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  detailRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 12,
-    color: '#ffffff',
   },
-  noDataText: {
+  detailContent: {
+    flexDirection: 'row',
+    marginLeft: 8,
+    flex: 1,
+  },
+  detailLabel: {
+    color: '#ECF0F1',
+    fontSize: 14,
+    fontWeight: '500',
+    marginRight: 8,
+  },
+  detailValue: {
+    color: '#BDC3C7',
+    fontSize: 14,
+    flex: 1,
+  },
+  emptyState: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 32,
+    backgroundColor: '#172435',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#2C3E50',
     marginTop: 20,
+  },
+  emptyIcon: {
+    marginBottom: 16,
+    opacity: 0.9,
+  },
+  emptyTitle: {
+    fontSize: 22,
+    fontWeight: '600',
+    color: '#ECF0F1',
+    marginBottom: 8,
+  },
+  emptyDescription: {
     fontSize: 16,
-    color: '#888888',
+    color: '#BDC3C7',
     textAlign: 'center',
+    lineHeight: 24,
   },
   errorText: {
-    color: 'red',
+    color: '#E74C3C',
     fontSize: 16,
     textAlign: 'center',
     marginVertical: 20,

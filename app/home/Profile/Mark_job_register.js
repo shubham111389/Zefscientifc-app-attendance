@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, ScrollView, TouchableOpacity, Text,Alert } from 'react-native';
+import { StyleSheet, View, ScrollView, TouchableOpacity, Text, Alert, ActivityIndicator } from 'react-native';
 import { TextInput, Button, Title, HelperText } from 'react-native-paper';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
-import {  AntDesign,  FontAwesome,  } from "@expo/vector-icons";
+import { AntDesign, FontAwesome } from "@expo/vector-icons";
 import { useForm, Controller } from 'react-hook-form';
 import {API_URL_FOR_JOB_REGISTER_POST} from "@env"
 import { Dropdown } from 'react-native-element-dropdown';
@@ -12,6 +12,8 @@ import { useRouter } from 'expo-router';
 import CustomAlert from './CustomAlert';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import useDropdownData from '../../../Hooks/useDropdownData';
+import OfflineComponent from './OfflineComponent';
+
 
 const JobRegisterReport = () => {
   const isOnline = useOnline(); 
@@ -32,6 +34,9 @@ const JobRegisterReport = () => {
   const [workingStatus, setWorkingStatus] = useState('Working ');
   const [ visitType,setVisitType]=useState('office');
   const [Employee_Code,setEmployee_Code]=useState('00'); 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isAddingAnother, setIsAddingAnother] = useState(false);
+  const [isAddingAnotherview, setIsAddingAnotherview] = useState(true);
 
   const [alertConfig, setAlertConfig] = useState({
       visible: false,  // Changed from isOpen to visible to match CustomAlert props
@@ -40,7 +45,7 @@ const JobRegisterReport = () => {
       message: ''
     });
 
-  // State to store AsyncStorage dataconst
+
 
   const getUserData = async () => {
     try {
@@ -68,35 +73,40 @@ const JobRegisterReport = () => {
       setEmployeeName(`${userData.firstName} ${userData.lastName}`);
       setEmployee_Code(userData.Employee_Code) // Concatenate first and last names
     }
-  }, [userData]); // Trigger when userData is updated
+  }, [userData]); 
+
+
   
 
 
  
   const onSubmit = async (data) => {
-   
+     setIsSubmitting(true);
     
- 
-    
+     
+  const getValueOrNA = (value) => {
+    if (value === undefined || value === null || value === '') {
+      return 'N/A';
+    }
+    return value;
+  };
+
       const formDatab = new FormData();
-      formDatab.append('Date', date.toDateString());
-      formDatab.append('EmployeeName', EmployeeName);
-      formDatab.append('WorkingStatus', data.WorkingStatus);
-      formDatab.append('VisitType', data.VisitType);
-      formDatab.append('City', data.City);
-      formDatab.append('Customer', data.Customer);
-      formDatab.append('ContactPerson', data.ContactPerson);
-      formDatab.append('JobType', data.JobType);
-      formDatab.append('Instrument', data.Instrument);
-      formDatab.append('SerialNo', data.SerialNo);
-      formDatab.append('JobCode', data.JobCode);
-    
-      formDatab.append('DetailsOfWorks', data.DetailsOfWorks);
-      formDatab.append('Employee_Code',Employee_Code);
-      
-      
-      console.log("Submitted Form Data:");
-  
+    formDatab.append('Date', date.toDateString());
+    formDatab.append('EmployeeName', getValueOrNA(EmployeeName));
+    formDatab.append('WorkingStatus', getValueOrNA(data.WorkingStatus));
+    formDatab.append('VisitType', getValueOrNA(data.VisitType));
+    formDatab.append('City', getValueOrNA(data.City));
+    formDatab.append('Customer', getValueOrNA(data.Customer));
+    formDatab.append('ContactPerson', getValueOrNA(data.ContactPerson));
+    formDatab.append('JobType', getValueOrNA(data.JobType));
+    formDatab.append('Instrument', getValueOrNA(data.Instrument));
+    formDatab.append('SerialNo', getValueOrNA(data.SerialNo));
+    formDatab.append('JobCode', getValueOrNA(data.JobCode));
+    formDatab.append('DetailsOfWorks', getValueOrNA(data.DetailsOfWorks));
+    formDatab.append('Employee_Code', getValueOrNA(Employee_Code));
+    formDatab.append('AccompaniedBy', getValueOrNA(data.AccompaniedBy));
+
 
     
 
@@ -108,8 +118,9 @@ const JobRegisterReport = () => {
             method: 'POST',
             body: formDatab,
           });
-          console.log( response);
+       
           if (response.ok) {
+            setIsSubmitting( false);
             setAlertConfig({
               visible: true,
               type: 'success',
@@ -138,12 +149,18 @@ const JobRegisterReport = () => {
       };
     
 
-  const handleAddAnotherExpense = async (data) => {
-    setIsLoading(true);
-    await onSubmit(data); 
-    setIsLoading(false);
-    router.push('./Mark_Expense_Report'); // Navigate after form submission is done
-  };
+      const handleAddAnotherExpense = async (data) => {
+        setIsAddingAnother(true);
+        setIsAddingAnotherview(false);
+       
+        try {
+          await onSubmit(data);
+         
+          router.push('./Mark_job_register');
+        } finally {
+          setIsAddingAnother(false);
+        }
+      };
 
   useEffect(() => {
     if (dropdownOptions) {
@@ -574,23 +591,50 @@ useEffect(() => {
           )}
         />
 
+        <View style={styles.buttonContainer}>
         <Button 
           mode="contained" 
           onPress={handleSubmit(onSubmit)} 
-          style={styles.button}
+          style={[styles.button, isSubmitting && styles.buttonLoading]}
           buttonColor="#3498DB"
+         
         >
-          Submit
+          {isSubmitting ? (
+            <View style={styles.buttonContent}>
+              <ActivityIndicator color="#3498DB" size={20} style={styles.spinner} />
+              <Text style={styles.buttonText}>Submitting...</Text>
+            </View>
+          ) : (
+            "Submit"
+          )}
         </Button>
+        
 
+        {isAddingAnotherview?
         <Button 
           mode="outlined" 
-          onPress={handleSubmit(handleAddAnotherExpense)} 
-          style={styles.button}
+          onPress={handleSubmit(handleAddAnotherExpense)
+           
+          } 
+          style={[styles.button, isAddingAnother && styles.buttonLoading]}
           textColor="#3498DB"
+          disabled={ isAddingAnother}
         >
-          Add Another Expense
+          {isAddingAnother ? (
+            <View style={styles.buttonContent}>
+              <ActivityIndicator color= "#3498DB" size={20} style={styles.spinner} />
+              <Text style={[styles.buttonText, { color: '#3498DB' }]}>Processing...</Text>
+            </View>
+          ) : (
+            "Add Another Job Register"
+          )}
         </Button>
+        : <View>
+          </View>
+          
+          }
+
+      </View>
       </View>
 
       <View style={styles.contactContainer}>
@@ -749,6 +793,30 @@ const styles = StyleSheet.create({
   icon: {
     marginHorizontal: 10,
   },
+  buttonContainer: {
+    marginVertical: 20,
+  },
+  button: {
+    marginVertical: 10,
+    height: 48,
+    justifyContent: 'center',
+  },
+  buttonLoading: {
+    opacity: 0.6,
+  },
+  buttonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttonText: {
+    color: '#FFFFFF',
+    marginLeft: 8,
+    fontSize: 16,
+  },
+  spinner: {
+    marginRight: 8,
+  },
   // Theme configuration for TextInput components
   textInputTheme: {
     colors: {
@@ -761,6 +829,7 @@ const styles = StyleSheet.create({
       onSurface: '#ECF0F1',    // This is crucial for text color
       onBackground: '#ECF0F1', // Additional text color property
     },
+    
   },
 });
 

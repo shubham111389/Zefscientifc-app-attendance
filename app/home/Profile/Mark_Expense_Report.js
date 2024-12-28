@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, ScrollView, TouchableOpacity, Text, Alert } from 'react-native';
+import { StyleSheet, View, ScrollView, TouchableOpacity, ActivityIndicator,Text, Alert } from 'react-native';
 import { TextInput, Button, Title, HelperText } from 'react-native-paper';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { AntDesign, FontAwesome } from "@expo/vector-icons";
@@ -12,6 +12,7 @@ import useOnline from '../../../Hooks/useOnline';
 import { useRouter } from 'expo-router';
 import CustomAlert from './CustomAlert';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import OfflineComponent from './OfflineComponent';
 
 const ExpenseForm = () => {
   const isOnline = useOnline(); 
@@ -26,7 +27,7 @@ const ExpenseForm = () => {
   const [isDropdown, setIsDropdown] = useState();  
   const [userData, setUserData] = useState(null);
   const [alertConfig, setAlertConfig] = useState({
-    visible: false,  // Changed from isOpen to visible to match CustomAlert props
+    visible: false,  
     type: 'success',
     title: '',
     message: ''
@@ -35,6 +36,10 @@ const ExpenseForm = () => {
   const [EmployeeName, setEmployeeName] = useState("name");
   const [Employee_Code, setEmployee_Code] = useState('00'); 
   const [Expense_Type, setExpense_Type] = useState();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isAddingAnother, setIsAddingAnother] = useState(false);
+  const [isAddingAnotherview, setIsAddingAnotherview] = useState(true);
+
 
   const getUserData = async () => {
     try {
@@ -59,19 +64,31 @@ const ExpenseForm = () => {
   }, [userData]);
 
   const onSubmit = async (data) => {
+
+    setIsSubmitting(true);
+
+    const getValueOrNA = (value) => {
+      if (value === undefined || value === null || value === '') {
+        return 'N/A';
+      }
+      return value;
+    };
+  
+
+
     const formDatab = new FormData();
     formDatab.append('DateAndDay', data.DateDateAndDay || date.toDateString());
     formDatab.append('EmployeeName', EmployeeName);
-    formDatab.append('Category', data.Category);
-    formDatab.append('City', data.City);
-    formDatab.append('ExpenseType', data.ExpenseType);
-    formDatab.append('Amount', data.Amount);
-    formDatab.append('Description', data.Description);
-    formDatab.append('BillSubmitted', data.BillSubmitted);
-    formDatab.append('KMForPetrolExpenses', data.KMForPetrolExpenses);
-    formDatab.append('ReferenceForKMCalculation', data.ReferenceForKMCalculation);
-    formDatab.append('DetailsOrRemarks', data.DetailsOrRemarks);
-    formDatab.append('Employee_Code', Employee_Code);
+    formDatab.append('Category', getValueOrNA(data.Category));
+    formDatab.append('City', getValueOrNA(data.City));
+    formDatab.append('ExpenseType', getValueOrNA(data.ExpenseType));
+    formDatab.append('Amount', getValueOrNA(data.Amount));
+    formDatab.append('Description', getValueOrNA(data.Description));
+    formDatab.append('BillSubmitted', getValueOrNA(data.BillSubmitted));
+    formDatab.append('KMForPetrolExpenses', getValueOrNA(data.KMForPetrolExpenses));
+    formDatab.append('ReferenceForKMCalculation',getValueOrNA(data.ReferenceForKMCalculation));
+    formDatab.append('DetailsOrRemarks', getValueOrNA(data.DetailsOrRemarks));
+    formDatab.append('Employee_Code', getValueOrNA(Employee_Code));
 
     try {
       const response = await fetch(API_URL_FOR_EXPENSE_POST, {
@@ -80,6 +97,9 @@ const ExpenseForm = () => {
       });
       console.log( response);
       if (response.ok) {
+
+        setIsSubmitting( false);
+
         setAlertConfig({
           visible: true,
           type: 'success',
@@ -108,10 +128,17 @@ const ExpenseForm = () => {
   };
 
   const handleAddAnotherExpense = async (data) => {
-    setIsLoading(true);
-    await onSubmit(data);
-    setIsLoading(false);
-    router.push('./Mark_Expense_Report');
+
+    setIsAddingAnother(true);
+    setIsAddingAnotherview(false);
+    
+    try {
+      await onSubmit(data);
+     
+      router.push('./Mark_job_register');
+    } finally {
+      setIsAddingAnother(false);
+    }
   };
 
  
@@ -462,23 +489,50 @@ const BillSubmittedOptions = isDropdown.Bill_submitted.map((type) => ({
           )}
         />
 
+<View style={styles.buttonContainer}>
         <Button 
           mode="contained" 
           onPress={handleSubmit(onSubmit)} 
-          style={styles.button}
+          style={[styles.button, isSubmitting && styles.buttonLoading]}
           buttonColor="#3498DB"
+         
         >
-          Submit
+          {isSubmitting ? (
+            <View style={styles.buttonContent}>
+              <ActivityIndicator color="#3498DB" size={20} style={styles.spinner} />
+              <Text style={styles.buttonText}>Submitting...</Text>
+            </View>
+          ) : (
+            "Submit"
+          )}
         </Button>
+        
 
+        {isAddingAnotherview?
         <Button 
           mode="outlined" 
-          onPress={handleSubmit(handleAddAnotherExpense)} 
-          style={styles.button}
+          onPress={handleSubmit(handleAddAnotherExpense)
+           
+          } 
+          style={[styles.button, isAddingAnother && styles.buttonLoading]}
           textColor="#3498DB"
+          disabled={ isAddingAnother}
         >
-          Add Another Expense
+          {isAddingAnother ? (
+            <View style={styles.buttonContent}>
+              <ActivityIndicator color= "#3498DB" size={20} style={styles.spinner} />
+              <Text style={[styles.buttonText, { color: '#3498DB' }]}>Processing...</Text>
+            </View>
+          ) : (
+            "Add Another Expense Register"
+          )}
         </Button>
+        : <View>
+          </View>
+          
+          }
+
+      </View>
       </View>
 
       <View style={styles.contactContainer}>
@@ -489,13 +543,13 @@ const BillSubmittedOptions = isDropdown.Bill_submitted.map((type) => ({
       </View>
 
       <View style={styles.socialIconsContainer}>
-        <FontAwesome name="facebook" size={24} color="#3498DB" style={styles.icon} />
-               <FontAwesome name="twitter" size={24} color="#1DA1F2" style={styles.icon} />
-               <FontAwesome name="linkedin" size={24} color="#0077B5" style={styles.icon} />
-               <FontAwesome name="instagram" size={24} color="#E1306C" style={styles.icon} />
-     </View>
+         <FontAwesome name="facebook" size={24} color="#3498DB" style={styles.icon} />
+                <FontAwesome name="twitter" size={24} color="#1DA1F2" style={styles.icon} />
+                <FontAwesome name="linkedin" size={24} color="#0077B5" style={styles.icon} />
+                <FontAwesome name="instagram" size={24} color="#E1306C" style={styles.icon} />
+       </View>
 
-     <CustomAlert
+       <CustomAlert
         visible={alertConfig.visible}
         onClose={() => setAlertConfig(prev => ({ ...prev, visible: false }))}
         type={alertConfig.type}
@@ -533,9 +587,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#ECF0F1',
   },
-  form: {
-    marginBottom: 20,
-  },
+  // Input container for both Dropdown and TextInput
   inputContainer: {
     position: 'relative',
     borderColor: '#3498DB',
@@ -544,30 +596,37 @@ const styles = StyleSheet.create({
     padding: 8,
     marginBottom: 12,
     backgroundColor: '#172435',
+    
   },
+  // Style for focused state of inputs
   focusedInput: {
     marginTop: 10,
     borderColor: '#3498DB',
     borderWidth: 2,
   },
+  // Text styling for input values
   inputText: {
     fontSize: 16,
     color: '#ECF0F1',
   },
+  // Placeholder text styling
   placeholderText: {
     color: '#7F8C8D',
   },
+  // Search input styling for dropdowns
   searchInput: {
     height: 40,
     fontSize: 16,
     color: '#ECF0F1',
     backgroundColor: '#172435',
   },
+  // Dropdown specific styling
   dropdown: {
     paddingHorizontal: 8,
     paddingVertical: 6,
     backgroundColor: '#172435',
   },
+  // Floating label styling
   floatingLabel: {
     position: 'absolute',
     left: 8,
@@ -578,25 +637,30 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     color: '#3498DB',
   },
+  // TextInput specific styling
   input: {
     marginBottom: 12,
     backgroundColor: '#172435',
     borderColor: 'transparent',
-    color: '#7F8C8D',
+    color: '#ECF0F1',
   },
+  // Error text styling
   errorText: {
     fontSize: 12,
     marginTop: -8,
     marginBottom: 4,
     color: '#E74C3C',
   },
+  // Icon styling
   iconStyle: {
     width: 20,
     height: 20,
   },
+  // Button styling
   button: {
     marginVertical: 14,
   },
+  // Contact section styling
   contactContainer: {
     marginTop: 3,
     paddingHorizontal: 16,
@@ -613,6 +677,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 15,
   },
+  // Social icons styling
   socialIconsContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -622,6 +687,30 @@ const styles = StyleSheet.create({
   },
   icon: {
     marginHorizontal: 10,
+  },
+  buttonContainer: {
+    marginVertical: 20,
+  },
+  button: {
+    marginVertical: 10,
+    height: 48,
+    justifyContent: 'center',
+  },
+  buttonLoading: {
+    opacity: 0.6,
+  },
+  buttonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttonText: {
+    color: '#FFFFFF',
+    marginLeft: 8,
+    fontSize: 16,
+  },
+  spinner: {
+    marginRight: 8,
   },
   textInputTheme: {
     colors: {
