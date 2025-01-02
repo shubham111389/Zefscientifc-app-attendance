@@ -111,8 +111,7 @@ const Employee_job_Report = () => {
                         <Text style={styles.visitTypeText}>{item.VisitType?.trim()}</Text>
                       </View>
                     )}
-                  </View>value && value !== "undefined" ? value : "N/A";
-
+                  </View>
                   {renderInfoRow("person", "Accompanied By", item.AccompaniedBy &&  item.AccompaniedBy)}
                   {renderInfoRow("location-city", "City", item.City)}
                   {renderInfoRow("person-outline", "Contact Person", item.ContactPerson)}

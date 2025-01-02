@@ -55,7 +55,7 @@ const LoginForm = () => {
     switch (field) {
       case 'email':
         if (!value) return 'Email is required';
-        if (!value.endsWith('@zefsci.com')) return 'Please use a @zefsci.com email address';
+        if (!value.endsWith('@zefsci.com')) return 'Please use a Official email address';
         return '';
       case 'password':
         if (!value) return 'Password is required';
@@ -152,7 +152,7 @@ const LoginForm = () => {
         showAlert('success', 'Welcome!', 'Successfully registered with ZEF SCIENTIFIC IND PVT LTD');
       }
     } catch (error) {
-      console.error("Auth Error:", error);
+      console.error("Auth Error:", error.message);
       const errorMessages = {
         'auth/wrong-password': {
           title: 'Invalid Credentials',
@@ -166,7 +166,7 @@ const LoginForm = () => {
           title: 'Email Already Registered',
           message: 'This email is already registered. Please sign in instead.'
         },
-        'auth/invalid-email': {
+        'auth/invalid-credential': {
           title: 'Invalid Email',
           message: 'Please enter a valid email address.'
         },

@@ -1,12 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, ScrollView, TouchableOpacity, Text, PanResponder } from 'react-native';
+import { StyleSheet, View, ScrollView, TouchableOpacity, Text, PanResponder, Alert, Platform } from 'react-native';
 import { AntDesign, MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import LoadingScreen from './LoadingScreen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Footer from './Footer';
-import { useLocalSearchParams } from 'expo-router';
+import { API_URL_FOR_JOB_REGISTER_POST} from '@env';
+import * as FileSystem from 'expo-file-system';
+import { shareAsync } from 'expo-sharing';
+import CustomAlert from './CustomAlert';
+
+import OfflineComponent from './OfflineComponent';
+import useOnline from '../../../Hooks/useOnline';
+
+
 
 const formatDate = (date) => {
   const options = { year: 'numeric', month: 'long', day: 'numeric' };
@@ -69,7 +77,6 @@ const JobCard = ({ job }) => {
             {job.WorkingStatus || 'N/A'}
           </Text>
         </View>
-        {console.log(job)}
         <View style={styles.detailSection}>
           <DetailRow icon="directions" label="Visit Type" value={job.VisitType} />
           <DetailRow icon="location-city" label="City" value={job.City} />
@@ -99,50 +106,148 @@ const EmptyState = ({ employeeName, date }) => (
 );
 
 const Job_Register_Report = () => {
-  const { jobRegisterData } = useLocalSearchParams();
+  
+  
   const [date, setDate] = useState(new Date());
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
-  const [jobRegisterData1, setJobRegisterData1] = useState([]);
+  const [jobRegisterData, setJobRegisterData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [employeeName, setEmployeeName] = useState('Name');
+  const [downloading, setDownloading] = useState(false);
+  const isOnline = useOnline();
 
+  const [alert, setAlert] = useState({
+        visible: false,
+        type: 'success',
+        title: '',
+        message: ''
+      });
+
+
+
+  const showAlert = (type, title, message) => {
+        setAlert({
+          visible: true,
+          type,
+          title,
+          message
+        });
+      };
+    
+  const hideAlert = () => {
+        setAlert(prev => ({ ...prev, visible: false }));
+      
+      };
+        
+      const saveFile = async (uri, filename, mimetype) => {
+        if (Platform.OS === "android") {
+          try {
+            const permissions = await FileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync();
+            
+            if (permissions.granted) {
+              const base64 = await FileSystem.readAsStringAsync(uri, {
+                encoding: FileSystem.EncodingType.Base64
+              });
+              
+              const fileUri = await FileSystem.StorageAccessFramework.createFileAsync(
+                permissions.directoryUri,
+                filename,
+                'application/pdf'
+              );
+              
+              await FileSystem.writeAsStringAsync(fileUri, base64, {
+                encoding: FileSystem.EncodingType.Base64
+              });
+              
+              showAlert('success', 'Success', 'PDF downloaded successfully');
+            } else {
+              showAlert('error', 'Permission Required', 'You need to grant permission to save files');
+            }
+          } catch (error) {
+            showAlert('error', 'Error', 'Failed to save file');
+          }
+        } else {
+          await shareAsync(uri);
+        }
+      };
+
+
+  const downloadReport = async () => {
+    setDownloading(true);
+    const filename = `job-register-${formatDate(date)}.pdf`;
+    const url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSYE9BrUw9anZCtUI83gwtqlY5YfRbwxH-K9wrdR-Q9mRLsxf5JzhfYj68l3UutMpxKFrWuga8C-SLh/pub?gid=1527031786&single=true&output=pdf';
+    
+    try {
+      const result = await FileSystem.downloadAsync(
+        url,
+        FileSystem.documentDirectory + filename
+      );
+      await saveFile(result.uri, filename, 'application/pdf');
+    } catch (error) {
+      console.error('Download error:', error);
+      showAlert('error', 'Error', 'Failed to download PDF');
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+ 
   useEffect(() => {
-    const loadData = async () => {
+    const fetchJobRegisterData = async () => {
+      if (!isOnline) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const response = await fetch(API_URL_FOR_JOB_REGISTER_POST);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const result = await response.json();
+        setJobRegisterData(result.data || []);
+      } catch (error) {
+        console.error('Error fetching job register data:', error);
+        setError('Failed to fetch job register data');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchJobRegisterData();
+  }, [isOnline]);
+      
+  useEffect(() => {
+    const loadUserData = async () => {
       try {
         const userData = await AsyncStorage.getItem('@user_data');
         if (userData) {
           const parsedUserData = JSON.parse(userData);
           setEmployeeName(`${parsedUserData.firstName} ${parsedUserData.lastName}`);
         }
-
-        if (jobRegisterData) {
-          const parsedJobData = JSON.parse(jobRegisterData);
-          setJobRegisterData1(parsedJobData);
-        }
       } catch (error) {
-        console.error('Error loading data:', error);
-        setError('Failed to load data');
-      } finally {
-        setLoading(false);
+        console.error('Error loading user data:', error);
+        setError('Failed to load user data');
       }
     };
+    loadUserData();
+  }, []);
 
-    loadData();
-  }, [jobRegisterData]);
+
 
   useEffect(() => {
-    if (!jobRegisterData1.length) return;
-
     const formattedSelectedDate = formatDate(date);
-    const filtered = jobRegisterData1.filter(job => {
+    const filtered = jobRegisterData.filter(job => {
       const jobDate = formatDate(new Date(job.Date));
       return jobDate === formattedSelectedDate && 
              job.EmployeeName.trim().toLowerCase() === employeeName.trim().toLowerCase();
     });
     setFilteredData(filtered);
-  }, [date, jobRegisterData1, employeeName]);
+  }, [date, jobRegisterData, employeeName]);
+
+
 
   const panResponder = PanResponder.create({
     onMoveShouldSetPanResponder: (_, gestureState) => Math.abs(gestureState.dx) > 20,
@@ -152,7 +257,8 @@ const Job_Register_Report = () => {
     },
   });
 
-  if (loading) return <LoadingScreen />;
+  if (!isOnline) return <OfflineComponent />;
+  if (isLoading) return <LoadingScreen />;
   if (error) return (
     <View style={styles.container}>
       <Text style={styles.errorText}>Error: {error}</Text>
@@ -165,8 +271,27 @@ const Job_Register_Report = () => {
         <ScrollView style={styles.scrollView} {...panResponder.panHandlers}>
           <View style={styles.header}>
             <View style={styles.headerTop}>
-              <MaterialIcons name="work" size={28} color="#3498DB" />
-              <Text style={styles.headerTitle}>Job Register Report</Text>
+              <View style={styles.headerLeft}>
+                <MaterialIcons name="work" size={28} color="#3498DB" />
+                <Text style={styles.headerTitle}>Job Register Report</Text>
+              </View>
+              <TouchableOpacity 
+                style={styles.downloadButton}
+                onPress={downloadReport}
+                disabled={downloading}
+              >
+                <MaterialIcons 
+                  name="file-download" 
+                  size={18} 
+                  color={downloading ? "#BDC3C7" : "#3498DB"} 
+                />
+                <Text style={[
+                  styles.downloadText,
+                  { color: downloading ? "#BDC3C7" : "#3498DB" }
+                ]}>
+                  {downloading ? "Downloading..." : "Download"}
+                </Text>
+              </TouchableOpacity>
             </View>
             
             <View style={styles.dateNavigator}>
@@ -214,6 +339,15 @@ const Job_Register_Report = () => {
           
           <Footer />
         </ScrollView>
+
+        <CustomAlert
+        visible={alert.visible}
+        type={alert.type}
+        title={alert.title}
+        message={alert.message}
+        onClose={hideAlert}
+      />
+
       </LinearGradient>
     </View>
   );
@@ -240,13 +374,33 @@ const styles = StyleSheet.create({
   headerTop: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: 16,
   },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: '700',
     color: '#ECF0F1',
     marginLeft: 10,
+  },
+  downloadButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#172435',
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#2C3E50',
+  },
+  downloadText: {
+    marginLeft: 8,
+    fontSize: 12,
+    fontWeight: '500',
   },
   dateNavigator: {
     flexDirection: 'row',

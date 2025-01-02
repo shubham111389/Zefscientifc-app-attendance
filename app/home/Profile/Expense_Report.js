@@ -1,12 +1,19 @@
+
+
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, ScrollView, TouchableOpacity, Text, PanResponder } from 'react-native';
+import { StyleSheet, View, ScrollView, TouchableOpacity, Text, PanResponder, Platform } from 'react-native';
 import { AntDesign, MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import LoadingScreen from './LoadingScreen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Footer from './Footer';
-import { useLocalSearchParams } from 'expo-router';
+import { API_URL_FOR_EXPENSE_POST,API_FOR_EXPENSE_SHEET } from '@env';
+import * as FileSystem from 'expo-file-system';
+import { shareAsync } from 'expo-sharing';
+import CustomAlert from './CustomAlert';
+import OfflineComponent from './OfflineComponent';
+import useOnline from '../../../Hooks/useOnline';
 
 const formatDate = (date) => {
   const options = { year: 'numeric', month: 'long', day: 'numeric' };
@@ -14,44 +21,160 @@ const formatDate = (date) => {
 };
 
 const ExpenseReport = () => {
-  const { expenseData } = useLocalSearchParams();
   const [date, setDate] = useState(new Date());
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
-  const [allExpenseData, setAllExpenseData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [userData, setUserData] = useState(null);
   const [employeeName, setEmployeeName] = useState('Name');
+  const [downloading, setDownloading] = useState(false);
+  const [expenseData, setExpenseData] = useState([]);
+  const isOnline = useOnline();
 
-  const getUserData = async () => {
-    try {
-      const data = await AsyncStorage.getItem('@user_data');
-      if (data) {
-        setUserData(JSON.parse(data));
-        setLoading(false);
+  const [alert, setAlert] = useState({
+    visible: false,
+    type: 'success',
+    title: '',
+    message: ''
+  });
+
+  const showAlert = (type, title, message) => {
+    setAlert({ visible: true, type, title, message });
+  };
+
+  const hideAlert = () => {
+    setAlert(prev => ({ ...prev, visible: false }));
+  };
+
+  // Load user data
+  useEffect(() => {
+    const loadUserData = async () => {
+      try {
+        const userData = await AsyncStorage.getItem('@user_data');
+        if (userData) {
+          const parsedUserData = JSON.parse(userData);
+          setEmployeeName(`${parsedUserData.firstName} ${parsedUserData.lastName}`);
+        }
+      } catch (error) {
+        console.error('Error loading user data:', error);
+        setError('Failed to load user data');
       }
+    };
+
+    loadUserData();
+  }, []);
+
+  // Fetch expense data
+  useEffect(() => {
+    const fetchExpenseData = async () => {
+      if (!isOnline) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const response = await fetch(API_URL_FOR_EXPENSE_POST);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const result = await response.json();
+        if (!result.data) {
+          throw new Error('No data received from server');
+        }
+        
+        // Parse the data if it's a string, otherwise use it directly
+        const parsedData = typeof result.data === 'string' ? JSON.parse(result.data) : result.data;
+        setExpenseData(parsedData);
+      } catch (error) {
+        console.error('Error fetching expense data:', error);
+        setError('Failed to fetch expense data');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchExpenseData();
+  }, [isOnline]);
+
+
+  useEffect(() => {
+    if (!expenseData.length) return;
+
+    const formattedSelectedDate = formatDate(date);
+    const filtered = expenseData.filter((expense) => {
+      try {
+        const expenseDate = formatDate(new Date(expense.DateAndDay));
+        return expenseDate === formattedSelectedDate && 
+               expense.EmployeeName.trim().toLowerCase() === employeeName.trim().toLowerCase();
+      } catch (error) {
+        console.error('Error filtering expense:', error);
+        return false;
+      }
+    });
+    setFilteredData(filtered);
+  }, [date, expenseData, employeeName]);
+
+  const downloadReport = async () => {
+    setDownloading(true);
+    const filename = `expense-report-${formatDate(date)}.pdf`;
+    const url = API_FOR_EXPENSE_SHEET;
+    
+    try {
+      const result = await FileSystem.downloadAsync(
+        url,
+        FileSystem.documentDirectory + filename
+      );
+      await saveFile(result.uri, filename);
     } catch (error) {
-      console.error('Error fetching user data from AsyncStorage:', error);
+      console.error('Download error:', error);
+      showAlert('error', 'Error', 'Failed to download PDF');
+    } finally {
+      setDownloading(false);
     }
   };
 
-  useEffect(() => {
-    getUserData();
-  }, []);
-
-  useEffect(() => {
-    if (userData) {
-      setEmployeeName(`${userData.firstName} ${userData.lastName}`);
+  const saveFile = async (uri, filename) => {
+    if (Platform.OS === "android") {
+      try {
+        const permissions = await FileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync();
+        
+        if (permissions.granted) {
+          const base64 = await FileSystem.readAsStringAsync(uri, {
+            encoding: FileSystem.EncodingType.Base64
+          });
+          
+          const fileUri = await FileSystem.StorageAccessFramework.createFileAsync(
+            permissions.directoryUri,
+            filename,
+            'application/pdf'
+          );
+          
+          await FileSystem.writeAsStringAsync(fileUri, base64, {
+            encoding: FileSystem.EncodingType.Base64
+          });
+          
+          showAlert('success', 'Success', 'PDF downloaded successfully');
+        } else {
+          showAlert('error', 'Permission Required', 'You need to grant permission to save files');
+        }
+      } catch (error) {
+        showAlert('error', 'Error', 'Failed to save PDF');
+      }
+    } else {
+      await shareAsync(uri);
     }
-  }, [userData]);
+  };
 
-  useEffect(() => {
-      const result= JSON.parse(expenseData);
-      setAllExpenseData(result);
-  
-  
-    }, []);
+  const panResponder = PanResponder.create({
+    onMoveShouldSetPanResponder: (_, gestureState) => Math.abs(gestureState.dx) > 20,
+    onPanResponderRelease: (_, gestureState) => {
+      if (gestureState.dx > 0) {
+        setDate(d => new Date(d.setDate(d.getDate() - 1)));
+      } else if (gestureState.dx < 0) {
+        setDate(d => new Date(d.setDate(d.getDate() + 1)));
+      }
+    },
+  });
 
   const showDatePicker = () => {
     setDatePickerVisibility(true);
@@ -78,49 +201,16 @@ const ExpenseReport = () => {
     setDate(nextDay);
   };
 
-  useEffect(() => {
-    const formattedSelectedDate = formatDate(date);
-    const filtered = allExpenseData.filter((expense) => {
-      console.log( expense.DateAndDay)
-      const expenseDate = formatDate(new Date(expense.DateAndDay));
-      console.log(expenseDate);
-      const dateMatch = expenseDate === formattedSelectedDate;
-      console.log( dateMatch);
-    
-      const nameMatch = expense.EmployeeName.trim().toLowerCase() === employeeName.trim().toLowerCase();
-      console.log(nameMatch);
-      return dateMatch && nameMatch;
-    });
-    setFilteredData(filtered);
-  }, [date, allExpenseData, employeeName]);
-  console.log( filteredData);
-
-  const panResponder = PanResponder.create({
-    onMoveShouldSetPanResponder: (evt, gestureState) => Math.abs(gestureState.dx) > 20,
-    onPanResponderRelease: (evt, gestureState) => {
-      if (gestureState.dx > 0) {
-        goToPrevDay();
-      } else if (gestureState.dx < 0) {
-        goToNextDay();
-      }
-    },
-  });
-
-  if (loading) {
-    return <LoadingScreen />;
-  }   
-
-  if (error) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.errorText}>Error: {error}</Text>
-      </View>
-    );
-  }
 
 
-
-  
+  const getExpenseTypeColor = (type) => {
+    switch(type?.trim().toLowerCase()) {
+      case 'da outstation': return '#3498DB';
+      case 'transportation': return '#E74C3C';
+      case 'communication': return '#F39C12';
+      default: return '#2ECC71';
+    }
+  };
 
   const renderExpenseDetail = (icon, label, value) => {
     if (!value || value === 'N/A') return null;
@@ -136,20 +226,9 @@ const ExpenseReport = () => {
     );
   };
 
-  const getExpenseTypeColor = (type) => {
-    switch(type?.trim().toLowerCase()) {
-      case 'da outstation':
-        return '#3498DB'; // Changed to match home theme blue
-      case 'transportation':
-        return '#E74C3C'; // Changed to match home theme red
-      case 'communication':
-        return '#F39C12'; // Changed to match home theme orange
-      default:
-        return '#2ECC71'; // Changed to match home theme green
-    }
-  };
-
-  if (loading) return <LoadingScreen />;
+  if (!isOnline) return <OfflineComponent />;
+  if (isLoading) return <LoadingScreen />;
+  
   if (error) {
     return (
       <View style={styles.container}>
@@ -164,11 +243,30 @@ const ExpenseReport = () => {
         colors={["#0F1B2C", "#172435"]} 
         style={styles.gradientBackground}
       >
-        <ScrollView style={styles.scrollView}>
+        <ScrollView style={styles.scrollView} {...panResponder.panHandlers}>
           <View style={styles.header}>
             <View style={styles.headerTop}>
-              <MaterialIcons name="receipt-long" size={28} color="#3498DB" />
-              <Text style={styles.headerTitle}>Expense Report</Text>
+              <View style={styles.headerLeft}>
+                <MaterialIcons name="receipt-long" size={28} color="#3498DB" />
+                <Text style={styles.headerTitle}>Expense Report</Text>
+              </View>
+              <TouchableOpacity 
+                style={styles.downloadButton}
+                onPress={downloadReport}
+                disabled={downloading}
+              >
+                <MaterialIcons 
+                  name="file-download" 
+                  size={18} 
+                  color={downloading ? "#BDC3C7" : "#3498DB"} 
+                />
+                <Text style={[
+                  styles.downloadText,
+                  { color: downloading ? "#BDC3C7" : "#3498DB" }
+                ]}>
+                  {downloading ? "Downloading..." : "Download"}
+                </Text>
+              </TouchableOpacity>
             </View>
             
             <View style={styles.dateNavigator}>
@@ -230,6 +328,15 @@ const ExpenseReport = () => {
           )}
           <Footer />
         </ScrollView>
+
+        <CustomAlert
+        visible={alert.visible}
+        type={alert.type}
+        title={alert.title}
+        message={alert.message}
+        onClose={hideAlert}
+      />
+
       </LinearGradient>
     </View>
   );
@@ -256,13 +363,33 @@ const styles = StyleSheet.create({
   headerTop: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: 16,
   },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: '700',
     color: '#ECF0F1',
     marginLeft: 10,
+  },
+  downloadButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#172435',
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#2C3E50',
+  },
+  downloadText: {
+    marginLeft: 8,
+    fontSize: 12,
+    fontWeight: '500',
   },
   dateNavigator: {
     flexDirection: 'row',

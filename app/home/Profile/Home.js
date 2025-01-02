@@ -9,8 +9,9 @@ import useUserData from "../../../Hooks/useUserData";
 import OfflineComponent from './OfflineComponent';
 import useOnline from '../../../Hooks/useOnline'; 
 import LoadingScreen from "./LoadingScreen";
-import { API_URL_FOR_JOB_REGISTER_POST} from '@env';
-import { API_URL_FOR_EXPENSE_POST } from '@env';
+
+
+
 
 const Home = () => {
   const isOnline = useOnline(); 
@@ -18,10 +19,9 @@ const Home = () => {
   const [userdata,setUserData] = useState();
   const { userDetails } = useUserData();
   const [isLoading, setIsLoading] = useState(true);
-  const [isLoading1, setIsLoading1] = useState(true);
-  const [isLoading2, setIsLoading2] = useState(true);
-  const [jobRegisterData, setJobRegisterData] = useState(null);
-  const [expenseData, setExpenseData] = useState(null);
+  
+ 
+ 
     
 
   const checkUserSession = async () => {
@@ -42,54 +42,15 @@ const Home = () => {
   };
 
 
-  useEffect(() => {
-      const fetchJobRegisterData = async () => {
-        try {
-          const response = await fetch(API_URL_FOR_JOB_REGISTER_POST);
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-          const result = await response.json();
-          setJobRegisterData(result.data);
-     
-        } catch (error) {
-          console.error('Error fetching job register data:', error);
-        } finally {
-          setIsLoading1(false);
-        }
-      };
   
-      fetchJobRegisterData();
-    }, []);
-  
-    useEffect(() => {
-        const fetchData = async () => {
-          try {
-            const response = await fetch(API_URL_FOR_EXPENSE_POST);
-            if (!response.ok) {
-              throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            const result = await response.json();
-          
-            setExpenseData(result.data);
-          } catch (error) {
-            console.error('Error fetching data:', error);
-          } finally {
-            setIsLoading2(false);
-          }
-        };
-        fetchData();
-      }, []);
-   
 
-   console.log( jobRegisterData);
-   console.log( expenseData);
+  
 
   useEffect(() => {
     checkUserSession();
   }, []); 
 
-  if (isLoading || isLoading2 ||isLoading1) {
+  if (isLoading ) {
     return <LoadingScreen />;
   }
 
@@ -155,9 +116,6 @@ const Home = () => {
           <Pressable 
                 onPress={() => router.push({
                   pathname: "/home/Profile/Job_Register_Report",
-                  params: { 
-                    jobRegisterData: JSON.stringify(jobRegisterData)
-                  }
                 
               })}
                 style={styles.reportButton}
@@ -174,7 +132,7 @@ const Home = () => {
             <Pressable
               onPress={() => router.push({
                 pathname: "/home/Profile/Expense_Report",
-                params: { expenseData: JSON.stringify(expenseData)}
+               
               
             })}
             style={styles.reportButton}
@@ -215,9 +173,7 @@ const Home = () => {
               <Pressable 
                 onPress={() => router.push({
                   pathname: "/home/Profile/Team_data/Teams",
-                  params: { expenseData: JSON.stringify(expenseData),
-                    jobRegisterData: JSON.stringify(jobRegisterData)
-                  }
+                 
                 
               })}
                 style={styles.managerButton}
@@ -265,7 +221,7 @@ const Home = () => {
 export default Home;
 
 const styles = StyleSheet.create({
-  container: {
+  container: { 
     flex: 1,
     backgroundColor: '#0F1B2C'
   },
