@@ -6,7 +6,7 @@ import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import LoadingScreen from './LoadingScreen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Footer from './Footer';
-import { API_URL_FOR_JOB_REGISTER_POST} from '@env';
+import { API_URL_FOR_JOB_REGISTER_POST , API_FOR_EXPENSE_SHEET } from '@env';
 import * as FileSystem from 'expo-file-system';
 import { shareAsync } from 'expo-sharing';
 import CustomAlert from './CustomAlert';
@@ -177,7 +177,7 @@ const Job_Register_Report = () => {
   const downloadReport = async () => {
     setDownloading(true);
     const filename = `job-register-${formatDate(date)}.pdf`;
-    const url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSYE9BrUw9anZCtUI83gwtqlY5YfRbwxH-K9wrdR-Q9mRLsxf5JzhfYj68l3UutMpxKFrWuga8C-SLh/pub?gid=1527031786&single=true&output=pdf';
+    const url = API_FOR_EXPENSE_SHEET ;
     
     try {
       const result = await FileSystem.downloadAsync(
